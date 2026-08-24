@@ -1,0 +1,103 @@
+{
+  "tag": "body",
+  "classes": "bg-primary",
+  "childCount": 10,
+  "children": [
+    {
+      "tag": "div",
+      "classes": "page-wrapper",
+      "childCount": 4,
+      "children": [
+        {
+          "tag": "div",
+          "classes": "global-styles w-embed",
+          "childCount": 1,
+          "children": [
+            null
+          ]
+        },
+        {
+          "tag": "div",
+          "classes": "navbar w-nav",
+          "childCount": 2,
+          "children": [
+            null,
+            null
+          ]
+        },
+        {
+          "tag": "main",
+          "classes": "main-wrapper",
+          "childCount": 10,
+          "children": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "tag": "div",
+          "classes": "temlis_component",
+          "childCount": 3,
+          "children": [
+            null,
+            null,
+            null
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "script",
+      "childCount": 0,
+      "children": []
+    },
+    {
+      "tag": "script",
+      "childCount": 0,
+      "children": []
+    },
+    {
+      "tag": "script",
+      "childCount": 0,
+      "children": []
+    },
+    {
+      "tag": "script",
+      "childCount": 0,
+      "children": []
+    },
+    {
+      "tag": "script",
+      "childCount": 0,
+      "children": []
+    },
+    {
+      "tag": "script",
+      "childCount": 0,
+      "children": []
+    },
+    {
+      "tag": "script",
+      "childCount": 0,
+      "children": []
+    },
+    {
+      "tag": "script",
+      "childCount": 0,
+      "children": []
+    },
+    {
+      "tag": "script",
+      "childCount": 0,
+      "children": []
+    }
+  ]
+}

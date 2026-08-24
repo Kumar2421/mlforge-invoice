@@ -1,0 +1,15 @@
+{
+  "accentButton": "rgb(214, 253, 112)",
+  "accentText": "rgb(19, 19, 19)",
+  "heroHeading": "rgb(255, 255, 255)",
+  "bodyText": "rgb(19, 19, 19)",
+  "mutedText": "rgba(19, 19, 19, 0.2)",
+  "darkBg": "rgba(0, 0, 0, 0)",
+  "h1Font": "\"Plus Jakarta Sans\", sans-serif",
+  "h1Size": "60px",
+  "h1Weight": "500",
+  "h2Font": "\"Plus Jakarta Sans\", sans-serif",
+  "h2Size": "48px",
+  "bodyFont": "\"Plus Jakarta Sans\", sans-serif",
+  "bodySize": "12px"
+}
