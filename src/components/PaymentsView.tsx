@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Search, ChevronDown, ChevronLeft, ChevronRight, Filter, TrendingUp, Clock, Wallet, Loader2 } from "lucide-react";
 import { fetchAPI } from "@/utils/api";
+import type { Payment } from "@/types";
 
 function statusClass(status: string) {
   switch (status) {
@@ -26,7 +27,7 @@ function MethodBadge({ method }: { method: string }) {
 }
 
 export default function PaymentsView() {
-  const [payments, setPayments] = useState<any[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

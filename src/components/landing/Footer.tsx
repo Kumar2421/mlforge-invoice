@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal';
 
 export function Footer() {
@@ -6,28 +5,34 @@ export function Footer() {
     <footer className="w-full bg-transparent">
       <Reveal delay={0}>
         <div className="px-3 pb-3">
-        <div className="w-full rounded-[24px] bg-[#131313] p-10 text-white">
+        <div className="w-full rounded-[24px] bg-[#131313] p-[45px] text-white">
           <div className="flex flex-col gap-10">
             <div className="grid grid-cols-[552px_736px] gap-12">
               <div className="flex flex-col justify-between gap-4">
-                <div>
-                  <Image
-                    src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/69bc6c8e343f8f1f1832309a_aeline-logo.svg"
-                    alt="Aeline"
-                    width={114}
-                    height={30}
-                    priority
-                  />
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2.5">
+                    <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+                      <circle cx="14" cy="14" r="14" fill="#22C55E" />
+                      <path
+                        d="M9 18C9 14 12 10 18 9C17 13 15 16 11 18C10.5 18.3 9.5 18.3 9 18Z"
+                        fill="white"
+                        stroke="white"
+                        strokeWidth="0.5"
+                      />
+                    </svg>
+                    <span className="text-base font-bold tracking-tight text-white">Payment Reminders</span>
+                  </div>
+                  <span className="ml-[34px] text-xs font-medium text-white/50">by mlforge</span>
                 </div>
 
                 <p className="text-base leading-[1.4] text-white">
-                  Easily adapt to changes and scale your operations with our flexible infrastructure,
-                  designed to support your business growth.
+                  Escalating payment reminders for anyone who invoices and waits,
+                  connected read-only to your own Stripe.
                 </p>
 
                 <div>
                   <label className="mb-4 block text-base font-normal text-white">
-                    Subscribe our newsletter
+                    Get notified when we launch
                   </label>
                   <div className="flex gap-4">
                     <input
@@ -53,44 +58,29 @@ export function Footer() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="flex flex-col gap-4">
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    Home V.1
+                  <span className="text-base font-medium text-white">Product</span>
+                  <a href="#how-it-works" className="text-base text-[#b8d4a8]">
+                    How it works
                   </a>
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    Home V.2
-                  </a>
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    Home V.3
-                  </a>
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    Services
+                  <a href="#features" className="text-base text-[#b8d4a8]">
+                    Features
                   </a>
                 </div>
 
                 <div className="flex flex-col gap-4">
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    Contact V.1
+                  <span className="text-base font-medium text-white">Account</span>
+                  <a href="/login" className="text-base text-[#b8d4a8]">
+                    Login
                   </a>
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    Contact V.2
-                  </a>
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    Contact V.3
-                  </a>
-                  <a href="#" className="text-base text-[#b8d4a8]">
+                  <a href="#pricing" className="text-base text-[#b8d4a8]">
                     Pricing
                   </a>
                 </div>
 
                 <div className="flex flex-col gap-4">
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    About us V.1
-                  </a>
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    About us V.2
-                  </a>
-                  <a href="#" className="text-base text-[#b8d4a8]">
-                    About us V.3
+                  <span className="text-base font-medium text-white">More</span>
+                  <a href="/contact" className="text-base text-[#b8d4a8]">
+                    Contact
                   </a>
                   <a href="#" className="text-base text-[#b8d4a8]">
                     Blog
@@ -102,18 +92,15 @@ export function Footer() {
             <div className="flex items-center justify-between gap-6 border-t border-[#333333] pt-6">
               <div className="flex gap-6">
                 <a href="#" className="text-base text-[#b8d4a8]">
-                  Style Guide
+                  Privacy
                 </a>
                 <a href="#" className="text-base text-[#b8d4a8]">
-                  Changelog
-                </a>
-                <a href="#" className="text-base text-[#b8d4a8]">
-                  Licensing
+                  Terms
                 </a>
               </div>
 
               <span className="text-base text-[#c7c7c7]">
-                © 2026 Aeline Inc. All rights reserved.
+                © 2026 mlforge. Read-only, always.
               </span>
             </div>
           </div>

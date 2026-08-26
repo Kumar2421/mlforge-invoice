@@ -1,6 +1,7 @@
 'use client';
 
 import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal';
+import { Sparkles, TrendingUp, Users, Lock } from 'lucide-react';
 
 export function Expertise() {
   return (
@@ -15,127 +16,166 @@ export function Expertise() {
           </div>
 
           <h2 className="mb-6 max-w-2xl text-center text-5xl font-medium leading-tight text-[#131313]">
-            Where human insight meets intelligent technology
+            Everything the reminder engine handles for you
           </h2>
 
           <p className="max-w-xl text-center text-base leading-relaxed text-[#585858]">
-            We help businesses harness technology not to replace human creativity, but to amplify it — enabling smarter decisions and faster.
+            Set it up once. The cadence, the tone, and the stop-on-paid logic run themselves from there.
           </p>
         </Reveal>
 
-        <div className="rounded-[24px] bg-[#f2f2f2] p-3">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Reveal delay={100}>
-              <ExpertiseCard
-                title="Automation & optimization"
-                description="Streamline your operations through intelligent workflow automation that saves time, reduces errors, and boosts productivity."
-              >
-                <div className="flex items-center gap-2">
-                  <Pill text="Professional" />
-                  <Pill text="Strategic" />
-                  <Pill text="AI-Focused" />
-                  <Pill text="Startup Feel" />
-                </div>
-              </ExpertiseCard>
-            </Reveal>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <Reveal delay={100}>
+            <ExpertiseCard
+              icon={0}
+              title="Escalation cadence"
+              description="Default Day 3 / 7 / 14 sequence, or set your own timing and tone per client."
+            >
+              <StageDotsCard />
+            </ExpertiseCard>
+          </Reveal>
 
-            <Reveal delay={200}>
-              <ExpertiseCard
-                title="Data analytics & insights"
-                description="Transform raw data into strategic insight using advanced analytics, dashboards, and predictive modeling."
-              >
-                <ChartMockup />
-              </ExpertiseCard>
-            </Reveal>
+          <Reveal delay={200}>
+            <ExpertiseCard
+              icon={1}
+              title="Payment analytics"
+              description="Collection rate, average days-to-pay, and how well each reminder stage actually works."
+            >
+              <ChartMockupCard />
+            </ExpertiseCard>
+          </Reveal>
 
-            <Reveal delay={300}>
-              <ExpertiseCard
-                title="Digital transformation"
-                description="We guide organizations through full-scale digital evolution — modernizing systems, processes, and decision-making frameworks."
-              >
-                <div className="flex items-center gap-2">
-                  <Pill text="Smarter" />
-                  <Pill text="Grow Faster" />
-                  <Pill text="Build Smart" />
-                  <Pill text="Simple" />
-                </div>
-              </ExpertiseCard>
-            </Reveal>
+          <Reveal delay={300}>
+            <ExpertiseCard
+              icon={2}
+              title="Client management"
+              description="See every client's outstanding balance and on-time rate. Mute reminders per client anytime."
+            >
+              <ClientRowCard />
+            </ExpertiseCard>
+          </Reveal>
 
-            <Reveal delay={400}>
-              <ExpertiseCard
-                title="Experience intelligence"
-                description="Combine data and design to deliver smarter, more personalized digital experiences that connect with users."
-              >
-                <DecorativeMockup />
-              </ExpertiseCard>
-            </Reveal>
-          </div>
+          <Reveal delay={400}>
+            <ExpertiseCard
+              icon={3}
+              title="Trust & security"
+              description="Restricted read-only Stripe key. We can see invoices and payments — nothing else, ever."
+            >
+              <TrustCard />
+            </ExpertiseCard>
+          </Reveal>
         </div>
       </div>
     </section>
   );
 }
 
+const ICONS = [Sparkles, TrendingUp, Users, Lock];
+
 interface ExpertiseCardProps {
+  icon: number;
   title: string;
   description: string;
   children: React.ReactNode;
 }
 
-function ExpertiseCard({ title, description, children }: ExpertiseCardProps) {
+function ExpertiseCard({ icon, title, description, children }: ExpertiseCardProps) {
+  const Icon = ICONS[icon % ICONS.length];
+
   return (
-    <div className="flex flex-col items-center gap-3 rounded-[12px] bg-white p-3">
-      <div className="flex h-24 w-full items-center justify-center md:h-96">
+    <div className="relative flex flex-col justify-between overflow-hidden rounded-[24px] bg-[#f7f7f7] p-8" style={{ minHeight: '360px' }}>
+      <div className="flex flex-col gap-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#d6fd70]">
+          <Icon className="h-5 w-5 text-[#131313]" strokeWidth={2} />
+        </div>
+
+        <h3 className="text-2xl font-medium text-[#131313]">{title}</h3>
+        <p className="max-w-sm text-sm leading-relaxed text-[#585858]">{description}</p>
+
+        <button className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-[#ececec] px-5 py-2.5 text-xs font-semibold tracking-wide text-[#131313] transition-colors hover:bg-[#e0e0e0]">
+          LEARN MORE
+        </button>
+      </div>
+
+      <div className="relative mt-8 flex h-40 items-end justify-end">
         {children}
       </div>
+    </div>
+  );
+}
 
-      <div className="w-full px-4 py-4">
-        <h3 className="mb-2 text-lg font-medium text-[#131313]">
-          {title}
-        </h3>
-        <p className="text-sm leading-relaxed text-[#585858]">
-          {description}
-        </p>
+function StageDotsCard() {
+  return (
+    <div className="absolute bottom-0 right-0 w-[220px] rounded-2xl bg-white p-4 shadow-xl">
+      <p className="text-xs font-medium text-[#585858]">Reminder sequence</p>
+      <p className="mt-1 text-sm font-semibold text-[#131313]">Day 3 &rarr; 7 &rarr; 14</p>
+      <div className="mt-3 flex items-center gap-1.5">
+        {[true, true, false].map((sent, i) => (
+          <div key={i} className="flex flex-1 items-center gap-1.5">
+            <span className={`h-2 w-2 shrink-0 rounded-full ${sent ? 'bg-[#131313]' : 'border-2 border-[#d6fd70]'}`} />
+            {i < 2 && <span className="h-px flex-1 bg-gray-200" />}
+          </div>
+        ))}
+      </div>
+      <span className="mt-3 inline-block rounded-full bg-[#f0fdf4] px-2 py-0.5 text-[10px] font-medium text-[#22C55E]">
+        Runs on its own
+      </span>
+    </div>
+  );
+}
+
+function ChartMockupCard() {
+  return (
+    <div className="absolute bottom-0 right-0 w-[220px] rounded-2xl bg-white p-4 shadow-xl">
+      <p className="text-xs font-medium text-[#585858]">Collection rate</p>
+      <div className="mt-1 flex items-baseline gap-1.5">
+        <span className="text-2xl font-black leading-none text-[#131313]">84%</span>
+        <span className="text-[10px] font-semibold text-[#22C55E]">+2.5%</span>
+      </div>
+      <div className="mt-3 flex items-end gap-1.5">
+        <div className="h-6 w-3 rounded bg-[#131313]/15" />
+        <div className="h-9 w-3 rounded bg-[#131313]/25" />
+        <div className="h-7 w-3 rounded bg-[#131313]/25" />
+        <div className="h-12 w-3 rounded bg-[#131313]" />
       </div>
     </div>
   );
 }
 
-function Pill({ text }: { text: string }) {
+function ClientRowCard() {
   return (
-    <div className="inline-block rounded-full border border-[#131313] px-3 py-1 text-xs font-medium text-[#131313]">
-      {text}
+    <div className="absolute bottom-0 right-0 w-[220px] rounded-2xl bg-white p-4 shadow-xl">
+      <p className="text-xs font-medium text-[#585858]">Andi Permana</p>
+      <div className="mt-1 flex items-baseline gap-1.5">
+        <span className="text-xl font-black leading-none text-[#131313]">$730</span>
+        <span className="text-[10px] font-medium text-[#585858]">outstanding</span>
+      </div>
+      <div className="mt-3 flex items-center gap-2 rounded-lg bg-[#FAFAFA] px-2.5 py-1.5">
+        <div className="h-5 w-5 shrink-0 rounded-full bg-[#131313]/10" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[10px] font-medium text-[#131313]">On-time rate</p>
+        </div>
+        <span className="rounded-full bg-[#f0fdf4] px-1.5 py-0.5 text-[9px] font-semibold text-[#22C55E]">72%</span>
+      </div>
     </div>
   );
 }
 
-function ChartMockup() {
+function TrustCard() {
   return (
-    <div className="flex items-end gap-1">
-      <div className="h-8 w-2 rounded bg-gray-300" />
-      <div className="h-12 w-2 rounded bg-gray-300" />
-      <div className="h-10 w-2 rounded bg-gray-300" />
-      <div className="h-16 w-2 rounded bg-[#d6fd70]" />
-      <div className="h-6 w-2 rounded bg-gray-300" />
-    </div>
-  );
-}
-
-function DecorativeMockup() {
-  return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="flex gap-2">
-        <div className="h-8 w-8 rounded-lg bg-gray-400" />
-        <div className="h-8 w-20 rounded-lg bg-gray-300" />
+    <div className="absolute bottom-0 right-0 w-[220px] rounded-2xl bg-white p-4 shadow-xl">
+      <div className="flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#131313]">
+          <Lock className="h-3.5 w-3.5 text-white" strokeWidth={2} />
+        </div>
+        <div>
+          <p className="text-xs font-medium text-[#585858]">Access level</p>
+          <p className="text-sm font-semibold text-[#131313]">Read-only key</p>
+        </div>
       </div>
-      <div className="flex gap-1">
-        <span className="inline-block rounded-full bg-gray-300 px-2 py-1 text-xs text-gray-500">+2.5%</span>
-      </div>
-      <div className="flex gap-2">
-        <span className="inline-block rounded-full bg-gray-200 px-2 py-1 text-xs text-gray-500">Strategy</span>
-        <span className="inline-block rounded-full bg-gray-200 px-2 py-1 text-xs text-gray-500">Design</span>
-      </div>
+      <span className="mt-3 inline-block rounded-full bg-[#f0fdf4] px-2 py-0.5 text-[10px] font-medium text-[#22C55E]">
+        invoices:read only
+      </span>
     </div>
   );
 }

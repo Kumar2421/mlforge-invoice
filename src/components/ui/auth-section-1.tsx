@@ -1,70 +1,86 @@
 "use client";
 
-import { GrainGradient } from "@paper-design/shaders-react";
 import { useState } from "react";
-import type { ReactNode } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { Mail, Lock, CheckCircle2 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const termsText = (
   <>
     By creating an account, you agree to our{" "}
-    <a
-      href="#"
-      className="font-medium text-black/45 underline underline-offset-2 dark:text-white/45"
-    >
+    <a href="#" className="font-medium text-black/45 underline underline-offset-2 dark:text-white/45">
       Terms and Services
     </a>{" "}
     and{" "}
-    <a
-      href="#"
-      className="font-medium text-black/45 underline underline-offset-2 dark:text-white/45"
-    >
+    <a href="#" className="font-medium text-black/45 underline underline-offset-2 dark:text-white/45">
       Privacy Policy
     </a>
   </>
 );
 
+type Mode = "signin" | "signup";
+
 export default function AuthSectionOne() {
   const router = useRouter();
   const supabase = createClient();
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const isSignUp = mode === "signup";
+
+  const toggleMode = () => {
+    setMode(isSignUp ? "signin" : "signup");
+    setError(null);
+    setNotice(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    
-    // In a real scenario, you might have separate login/signup toggles.
-    // Here we'll just try to sign in, and if they don't exist, try to sign up.
-    let { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    setNotice(null);
 
-    if (authError?.message === 'Invalid login credentials') {
-      // Try to sign up if login fails
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      authError = signUpError;
-    }
-
-    if (authError) {
-      setError(authError.message);
+    if (isSignUp) {
+      const { data, error: authError } = await supabase.auth.signUp({ email, password });
+      if (authError) {
+        setError(authError.message);
+      } else if (!data.session) {
+        // Email confirmation is required on this project — there's no session yet,
+        // so redirecting to /dashboard would just bounce back to /login.
+        setNotice("Check your email to confirm your account, then sign in.");
+        setMode("signin");
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
     } else {
-      router.push("/dashboard");
-      router.refresh();
+      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      if (authError) {
+        setError(authError.message);
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
     }
-    
+
     setIsLoading(false);
   };
 
-  const handleOAuth = async (provider: 'google' | 'apple') => {
+  // Google/Apple aren't enabled in this Supabase project's Auth settings yet
+  // (requires provider credentials from Google Cloud Console / Apple Developer).
+  // Disabled rather than left silently broken.
+  const oauthAvailable = false;
+
+  const handleOAuth = async (provider: "google" | "apple") => {
+    if (!oauthAvailable) return;
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -74,166 +90,166 @@ export default function AuthSectionOne() {
   };
 
   return (
-    <section className="min-h-screen bg-white p-3 text-black antialiased [font-synthesis:none] dark:bg-[#050505] dark:text-white">
-      <div className="grid min-h-[calc(100vh-1.5rem)] gap-6 lg:grid-cols-[0.94fr_1.06fr]">
-        <div className="flex min-h-[760px] items-start rounded-md border border-black/20 bg-white px-6 py-12 sm:px-10 dark:border-white/10 dark:bg-[#0a0a0a] lg:min-h-0 lg:px-14 lg:py-28 xl:px-20">
-          <div className="mx-auto w-full max-w-[590px]">
-            <div>
-              <h1 className="whitespace-nowrap text-3xl font-medium tracking-[-0.04em] sm:text-4xl lg:text-[42px] lg:leading-[1.05] xl:text-[50px]">
-                Welcome Back
-              </h1>
-              <p className="mt-3 whitespace-nowrap text-lg leading-snug text-black/60 dark:text-white/55 sm:text-xl lg:text-2xl xl:text-3xl">
-                Manage your invoices seamlessly.
+    <section className="h-screen overflow-hidden bg-white p-3 text-black antialiased [font-synthesis:none] dark:bg-[#050505] dark:text-white">
+      <div className="grid h-[calc(100vh-1.5rem)] gap-6 lg:grid-cols-[0.94fr_1.06fr]">
+        {/* Left: sign-in / sign-up form */}
+        <div className="flex items-center justify-center overflow-hidden rounded-md border border-black/20 bg-white px-6 sm:px-10 dark:border-white/10 dark:bg-[#0a0a0a] lg:px-14 xl:px-16">
+          <div className="w-full max-w-[420px]">
+            <div className="mb-2 flex items-center gap-2">
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+                <circle cx="14" cy="14" r="14" fill="#22C55E" />
+                <path
+                  d="M9 18C9 14 12 10 18 9C17 13 15 16 11 18C10.5 18.3 9.5 18.3 9 18Z"
+                  fill="white"
+                  stroke="white"
+                  strokeWidth="0.5"
+                />
+              </svg>
+              <span className="text-sm font-bold tracking-tight">Payment Reminders</span>
+            </div>
+
+            <h1 className="text-2xl font-medium tracking-[-0.04em] sm:text-3xl">
+              {isSignUp ? "Create your account" : "Welcome back"}
+            </h1>
+            <p className="mt-1.5 text-sm leading-snug text-black/60 dark:text-white/55">
+              {isSignUp ? "Start automating payment reminders." : "Manage your invoices seamlessly."}
+            </p>
+
+            <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!oauthAvailable}
+                title={oauthAvailable ? undefined : "Coming soon"}
+                className="h-9 gap-2 text-sm"
+                onClick={() => handleOAuth("google")}
+              >
+                <GoogleIcon />
+                Google
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!oauthAvailable}
+                title={oauthAvailable ? undefined : "Coming soon"}
+                className="h-9 gap-2 text-sm"
+                onClick={() => handleOAuth("apple")}
+              >
+                <AppleIcon />
+                Apple
+              </Button>
+            </div>
+            {!oauthAvailable && (
+              <p className="mt-1.5 text-xs text-black/35 dark:text-white/35">
+                Google and Apple sign-in are coming soon &mdash; use email for now.
               </p>
-            </div>
+            )}
 
-            <div className="mt-12 grid gap-5 sm:grid-cols-2">
-              <SocialButton icon={<GoogleIcon />} label="Sign up with Google" onClick={() => handleOAuth('google')} />
-              <SocialButton icon={<AppleIcon />} label="Sign up with Apple" onClick={() => handleOAuth('apple')} />
-            </div>
-
-            <div className="my-10 text-center text-xl font-medium text-black/60 dark:text-white/50">
+            <div className="my-4 flex items-center gap-3 text-xs text-black/40 dark:text-white/40">
+              <div className="h-px flex-1 bg-black/10 dark:bg-white/10" />
               or
+              <div className="h-px flex-1 bg-black/10 dark:bg-white/10" />
             </div>
 
-            <form className="space-y-5" onSubmit={handleLogin}>
-              <FieldBox
-                label="Email"
-                value={email}
-                onChange={setEmail}
-                type="email"
-              />
-              <FieldBox
-                label="Password"
-                value={password}
-                onChange={setPassword}
-                type="password"
-              />
-
-              {error && <div className="text-red-500 text-sm">{error}</div>}
-
-              <div className="space-y-4 pt-2 text-sm leading-5 text-black/30 dark:text-white/35 sm:text-[15px]">
-                <CheckboxLine>
-                  I don't want to receive emails about new feature updates
-                </CheckboxLine>
-                <CheckboxLine>{termsText}</CheckboxLine>
+            <form className="flex flex-col gap-3.5" onSubmit={handleSubmit}>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="email">Email</Label>
+                <div className="flex items-center gap-2 rounded-lg border border-input px-3 h-10 focus-within:ring-[3px] focus-within:ring-ring/20 focus-within:border-ring">
+                  <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="h-full border-0 shadow-none px-0 focus-visible:ring-0"
+                    required
+                  />
+                </div>
               </div>
 
-              <button
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center gap-2 rounded-lg border border-input px-3 h-10 focus-within:ring-[3px] focus-within:ring-ring/20 focus-within:border-ring">
+                  <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={isSignUp ? "Create a password" : "Enter your password"}
+                    className="h-full border-0 shadow-none px-0 focus-visible:ring-0"
+                    required
+                  />
+                </div>
+              </div>
+
+              {error && <div className="text-sm text-red-500">{error}</div>}
+              {notice && <div className="text-sm text-[#16A34A]">{notice}</div>}
+
+              {isSignUp ? (
+                <p className="text-xs leading-5 text-black/40 dark:text-white/35">{termsText}</p>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Checkbox id="remember" />
+                    <Label htmlFor="remember" className="text-sm font-normal text-black/60 dark:text-white/55">
+                      Remember me
+                    </Label>
+                  </div>
+                  <button type="button" className="text-sm font-medium text-[#22C55E] hover:underline">
+                    Forgot password?
+                  </button>
+                </div>
+              )}
+
+              <Button
                 type="submit"
                 disabled={isLoading}
-                className="mt-9 flex h-12 w-full items-center justify-center rounded-[10px] border border-black/40 bg-black text-xl font-medium text-white transition-colors hover:bg-black/85 dark:border-white/40 dark:bg-white dark:text-black dark:hover:bg-white/85 disabled:opacity-50"
+                className="mt-1 h-10 w-full bg-[#22C55E] text-white text-sm font-medium hover:bg-[#16A34A]"
               >
-                {isLoading ? "Loading..." : "Submit"}
-              </button>
+                {isLoading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
+              </Button>
             </form>
+
+            <p className="mt-4 text-center text-sm text-black/50 dark:text-white/50">
+              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+              <button type="button" onClick={toggleMode} className="font-medium text-[#22C55E] hover:underline">
+                {isSignUp ? "Sign In" : "Sign Up"}
+              </button>
+            </p>
           </div>
         </div>
 
-        <div className="relative flex min-h-[720px] overflow-hidden rounded-md bg-black p-8 text-white sm:p-12 lg:min-h-0">
-          <GrainGradient
-            speed={1}
-            scale={1}
-            rotation={0}
-            offsetX={0}
-            offsetY={0}
-            softness={0.5}
-            intensity={0.5}
-            noise={0.25}
-            shape="corners"
-            frame={2854.5}
-            colors={["#FFFFFF", "#FC7819", "#FC7819", "#FFFFFF"]}
-            colorBack="#00000000"
-            className="absolute inset-0 bg-black"
+        {/* Right: brand panel, matches the landing page hero */}
+        <div className="relative hidden items-center justify-center overflow-hidden rounded-md lg:flex">
+          <img
+            src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6929d3408e9ff6a515b9eee8_ai-hero--1-.avif"
+            alt="Payment Reminders"
+            className="absolute inset-0 h-full w-full object-cover"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/10" />
 
-          <div className="relative z-10 flex h-full w-full flex-col justify-between">
-            <h2 className="max-w-[620px] pt-0 text-5xl font-medium tracking-[-0.05em] text-white sm:text-6xl lg:pt-16 lg:text-[64px] lg:leading-[0.98] xl:text-[70px]">
-              Get Paid Faster.
-            </h2>
+          <div className="relative z-10 flex h-full w-full flex-col justify-between p-8 sm:p-10">
+            <div />
+            <div>
+              <h2 className="max-w-[520px] text-3xl font-medium tracking-[-0.03em] text-white sm:text-4xl lg:text-[44px] lg:leading-[1.08]">
+                Get paid faster,
+                <br />
+                automatically.
+              </h2>
+              <p className="mt-3 max-w-[420px] text-sm text-white/85">
+                Escalating reminder emails for overdue invoices, connected read-only to your own Stripe.
+              </p>
+              <div className="mt-5 flex items-center gap-2 text-sm text-white/85">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[#A3E635]" />
+                Never moves money. Never creates invoices. Read-only, always.
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
-  );
-}
-
-function SocialButton({ icon, label, onClick }: { icon: ReactNode; label: string; onClick?: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex h-10 items-center justify-center gap-2 rounded-[10px] border border-black/25 bg-white px-3 text-sm leading-none text-black transition-colors hover:bg-black/[0.03] dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 xl:text-[19px]"
-    >
-      <span className="shrink-0">{icon}</span>
-      <span className="whitespace-nowrap">{label}</span>
-    </button>
-  );
-}
-
-function FieldBox({
-  label,
-  value,
-  onChange,
-  type = "text",
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  type?: string;
-}) {
-  const [isEditing, setIsEditing] = useState(false);
-
-  return (
-    <label className="flex h-14 items-center justify-between gap-4 rounded-[10px] border border-black/25 bg-white px-5 text-lg leading-none dark:border-white/15 dark:bg-white/5 xl:text-xl">
-      <input
-        type={type}
-        value={value}
-        aria-label={label}
-        onFocus={() => {
-          if (!isEditing) {
-            setIsEditing(true);
-          }
-        }}
-        onChange={(event) => {
-          onChange(event.target.value);
-          setIsEditing(true);
-        }}
-        placeholder={!isEditing ? "" : label}
-        className="min-w-0 flex-1 truncate bg-transparent text-black outline-none placeholder:text-black/30 dark:text-white dark:placeholder:text-white/35"
-      />
-      {!value && !isEditing && (
-        <span className="shrink-0 text-black/50 dark:text-white/50">{label}</span>
-      )}
-    </label>
-  );
-}
-
-function CheckboxLine({ children }: { children: ReactNode }) {
-  return (
-    <label className="flex items-start gap-3">
-      <span className="relative mt-1 size-3.5 shrink-0">
-        <input
-          type="checkbox"
-          className="peer size-full appearance-none rounded-[2px] border border-black/25 bg-white checked:border-black checked:bg-black dark:border-white/30 dark:bg-white/5 dark:checked:border-white dark:checked:bg-white"
-        />
-        <svg
-          viewBox="0 0 12 12"
-          className="pointer-events-none absolute inset-0 hidden size-full p-0.5 text-white peer-checked:block dark:text-black"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M3 6.2 5 8.1 9 3.9"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-      <span>{children}</span>
-    </label>
   );
 }
 
@@ -262,13 +278,7 @@ function GoogleIcon() {
 
 function AppleIcon() {
   return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M17.05 12.54c-.03-3.02 2.47-4.47 2.58-4.54-1.41-2.06-3.6-2.34-4.38-2.37-1.86-.19-3.64 1.1-4.58 1.1-.95 0-2.42-1.07-3.98-1.04-2.05.03-3.94 1.19-4.99 3.02-2.13 3.69-.54 9.16 1.53 12.15 1.01 1.46 2.22 3.1 3.81 3.04 1.53-.06 2.11-.99 3.96-.99s2.37.99 3.99.96c1.65-.03 2.69-1.49 3.69-2.96 1.16-1.69 1.64-3.33 1.66-3.41-.04-.02-3.2-1.23-3.24-4.87ZM14.03 3.66c.84-1.02 1.41-2.43 1.25-3.84-1.21.05-2.68.81-3.55 1.83-.78.9-1.46 2.34-1.28 3.72 1.35.1 2.73-.69 3.58-1.71Z" />
     </svg>
   );

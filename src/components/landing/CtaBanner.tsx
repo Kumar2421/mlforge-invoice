@@ -26,7 +26,7 @@ export function CtaBanner() {
           <Reveal delay={0}>
             <div className="flex flex-row items-center gap-4">
               <div className="font-sans text-base font-normal text-white">
-                Trusted over 5,000+
+                Read-only, always
               </div>
               <div className="flex flex-row">
                 <div className="relative h-10 w-10 -ml-3 flex-shrink-0 overflow-hidden rounded-full border-2 border-white">
@@ -61,7 +61,7 @@ export function CtaBanner() {
 
           <Reveal delay={100}>
             <h2 className="font-sans text-5xl font-medium leading-tight text-white" style={{ letterSpacing: '-0.072em' }}>
-              We combine human insight with artificial intelligence
+              Stop chasing payments by hand
             </h2>
           </Reveal>
 
@@ -69,8 +69,8 @@ export function CtaBanner() {
 
           <Reveal delay={200}>
             <div className="max-w-[528px] font-sans text-base font-normal leading-relaxed text-white">
-              Our consulting team bridges strategic thinking and advanced AI technologies to help companies streamline
-              processes, improve decision-making, and create intelligent digital experiences.
+              Connect your Stripe account in under a minute. Escalating reminders start
+              working the same day, and stop the instant an invoice is paid.
             </div>
           </Reveal>
 

@@ -5,45 +5,34 @@ import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Rev
 export function Pricing() {
   const cards = [
     {
-      name: 'STARTER PLAN',
-      description: 'Perfect for small teams beginning to explore AI and automation.',
-      price: '$2,500',
+      name: 'SOLO',
+      description: 'One Stripe account, unlimited reminders, the default cadence.',
+      price: '$9',
       features: [
-        'Strategy consultation (up to 10 hours)',
-        'Business process mapping',
-        'Basic AI workflow setup',
+        '1 Stripe account, read-only',
+        'Unlimited reminders',
+        'Default 3-stage cadence',
         'Email support'
       ],
       featured: false
     },
     {
-      name: 'GROWTH PLAN',
-      description: 'Designed for growing companies ready to integrate AI into their operations.',
-      price: '$8,500',
+      name: 'PRO',
+      description: 'Everything in Solo, plus PayPal and custom cadences per client.',
+      price: '$15',
       features: [
-        'Dedicated consultant',
-        'End-to-end automation setup',
-        'Predictive analytics dashboards',
-        'AI-driven reporting & insights'
+        'Everything in Solo',
+        'PayPal, read-only',
+        'Custom cadence per client',
+        'Team members',
+        'Priority support'
       ],
       featured: true
-    },
-    {
-      name: 'ENTERPRISE PLAN',
-      description: 'Custom-built for enterprises seeking full-scale transformation optimization.',
-      price: '$10,500',
-      features: [
-        'Tailored AI implementation roadmap',
-        'Custom automation architecture',
-        'Advanced data analytics',
-        '24/7 premium support'
-      ],
-      featured: false
     }
   ];
 
   return (
-    <section className="w-full bg-white py-20">
+    <section id="pricing" className="w-full bg-white py-20">
       <div className="mx-auto px-8 max-w-7xl">
         <Reveal delay={0} className="flex flex-col items-center justify-center text-center mb-20">
           <div className="flex items-center gap-3 mb-6">
@@ -54,11 +43,11 @@ export function Pricing() {
           </div>
 
           <h2 className="text-5xl font-medium mb-6 text-[#131313] max-w-2xl leading-tight">
-            Flexible Plans Built for Every Stage of Growth
+            Flat fee. No percentage cut.
           </h2>
 
           <p className="text-base text-[#585858] mb-8 max-w-2xl leading-relaxed">
-            Whether you&apos;re just starting your AI journey or scaling enterprise-wide innovation, we offer tailored solutions that grow with you.
+            Other tools take a cut of what you collect. We charge a flat monthly fee &mdash; you keep everything you get paid.
           </p>
 
           <button className="flex items-center gap-2 px-6 py-3 bg-[#131313] text-[#d6fd70] rounded-full hover:bg-black transition-colors font-mono uppercase text-sm font-medium tracking-wide">
@@ -67,7 +56,7 @@ export function Pricing() {
           </button>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-[#f2f2f2] p-3 rounded-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-[#f2f2f2] p-3 rounded-2xl max-w-3xl mx-auto">
           {cards.map((card, index) => (
             <Reveal key={index} delay={(index + 1) * 100} className={cn(
               'rounded-xl p-5 flex flex-col',

@@ -19,7 +19,7 @@ function onTimeBadgeClass(rate: number) {
 }
 
 export default function ClientsView() {
-  const [clients, setClients] = useState<any[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [muted, setMuted] = useState<Record<string, boolean>>({});
@@ -30,7 +30,7 @@ export default function ClientsView() {
         setClients(res.data || []);
         if (res.data?.length > 0) {
           setSelectedId(res.data[0].id);
-          const mutedState = Object.fromEntries(res.data.map((c: any) => [c.id, c.remindersMuted]));
+          const mutedState = Object.fromEntries((res.data as Client[]).map((c) => [c.id, c.remindersMuted]));
           setMuted(mutedState);
         }
       })
@@ -39,6 +39,19 @@ export default function ClientsView() {
   }, []);
 
   const selected = clients.find((c) => c.id === selectedId) || null;
+
+  const toggleMuted = async (clientId: string) => {
+    const nextMuted = !muted[clientId];
+    try {
+      await fetchAPI(`/api/v1/clients/${clientId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ remindersMuted: nextMuted })
+      });
+      setMuted((m) => ({ ...m, [clientId]: nextMuted }));
+    } catch (err) {
+      console.error("Failed to toggle reminders mute status", err);
+    }
+  };
 
   return (
     <div className="flex flex-1 min-h-0 w-full bg-white text-[#111827]">
@@ -133,7 +146,7 @@ export default function ClientsView() {
                       <div className="flex justify-center">
                         <span
                           role="button"
-                          onClick={(e) => { e.stopPropagation(); setMuted((m) => ({ ...m, [c.id]: !m[c.id] })); }}
+                          onClick={(e) => { e.stopPropagation(); toggleMuted(c.id); }}
                           className={`w-8 h-[18px] rounded-full p-[2px] relative cursor-pointer transition-colors ${muted[c.id] ? "bg-gray-200" : "bg-[#074E5B]"}`}
                         >
                           <span className={`block w-[14px] h-[14px] rounded-full bg-white absolute top-[2px] transition-all ${muted[c.id] ? "left-[2px]" : "right-[2px]"}`} />
@@ -188,7 +201,7 @@ export default function ClientsView() {
                 <span className="text-[11px] font-semibold text-gray-700">Mute reminders for this client</span>
                 <span
                   role="button"
-                  onClick={() => setMuted((m) => ({ ...m, [selected.id]: !m[selected.id] }))}
+                  onClick={() => toggleMuted(selected.id)}
                   className={`w-8 h-[18px] rounded-full p-[2px] relative cursor-pointer transition-colors ${muted[selected.id] ? "bg-gray-200" : "bg-[#074E5B]"}`}
                 >
                   <span className={`block w-[14px] h-[14px] rounded-full bg-white absolute top-[2px] transition-all ${muted[selected.id] ? "left-[2px]" : "right-[2px]"}`} />

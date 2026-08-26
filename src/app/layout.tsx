@@ -13,9 +13,26 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "mlforge Invoice - Get Paid, Automatically",
+  title: {
+    template: "%s | mlforge Invoice",
+    default: "Payment Reminders - Get Paid, Automatically | mlforge Invoice",
+  },
   description:
-    "Stripe sends the invoice. mlforge Invoice makes sure it gets paid: automated, escalating payment reminders for freelancers, connected read-only to your own Stripe.",
+    "Get paid faster. Automated, escalating payment reminders for anyone who invoices and waits, connected read-only to your own Stripe. Flat monthly fee, no percentage cut.",
+  openGraph: {
+    title: "mlforge Invoice - Automated Payment Reminders",
+    description: "Get paid faster with automated, escalating payment reminders. Connects to your Stripe.",
+    url: "https://invoice.mlforge.com", // Placeholder URL
+    siteName: "mlforge Invoice",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "mlforge Invoice - Automated Payment Reminders",
+    description: "Get paid faster with automated, escalating payment reminders. Connects to your Stripe.",
+  },
+  metadataBase: new URL("https://invoice.mlforge.com"), // Placeholder URL
 };
 
 export default function RootLayout({

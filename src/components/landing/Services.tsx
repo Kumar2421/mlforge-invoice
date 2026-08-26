@@ -5,7 +5,7 @@ import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Rev
 
 export function Services() {
   return (
-    <section className="w-full bg-white">
+    <section id="features" className="w-full bg-white">
       <div className="mx-auto px-12 py-24">
         <Reveal delay={0} className="flex flex-col items-center gap-8 text-center md:gap-12">
           <div className="flex items-center justify-center gap-3">
@@ -16,7 +16,7 @@ export function Services() {
               className="font-mono text-sm font-medium tracking-widest uppercase text-black"
               style={{ letterSpacing: '1.92px' }}
             >
-              SERVICES
+              FEATURES
             </span>
           </div>
 
@@ -27,7 +27,7 @@ export function Services() {
               fontFamily: '"Plus Jakarta Sans", sans-serif',
             }}
           >
-            Comprehensive consulting and intelligent innovation
+            Built for anyone who invoices and waits
           </h2>
 
           <p
@@ -37,7 +37,7 @@ export function Services() {
               letterSpacing: '-0.32px',
             }}
           >
-            Whether you&apos;re optimizing today or building for tomorrow we help you move faster with confidence.
+            Agencies, contractors, consultants, landlords &mdash; not just freelancers. If you invoice and wait, this is for you.
           </p>
 
           <button
@@ -94,8 +94,8 @@ export function Services() {
                     unoptimized
                   />
                 }
-                title="AI strategy"
-                description="We help you identify opportunities for AI adoption and implement the right solutions."
+                title="Read-only, always"
+                description="We never move money and never create invoices. Disconnect anytime, one click."
                 bgImage="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/696202d02a0dce5f45a031fb_service-img-2.webp"
               />
             </Reveal>
@@ -111,8 +111,8 @@ export function Services() {
                     unoptimized
                   />
                 }
-                title="Business consulting"
-                description="We help you identify opportunities for top growth and implement the right strategies."
+                title="Escalating, not spammy"
+                description="Gentle at Day 3, firmer at Day 7, final notice at Day 14 &mdash; tone that matches urgency."
                 bgImage="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6961fe8f17d6448d5348850c_service-img.webp"
               />
             </Reveal>
@@ -128,8 +128,8 @@ export function Services() {
                     unoptimized
                   />
                 }
-                title="Data & insights"
-                description="We help you identify opportunities for Big Data use and implement the right analytics."
+                title="Flat fee, no cut"
+                description="$9-15/month. Not a percentage of what you collect. Get paid more, keep more."
                 bgImage="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/696202de6ed108d94012bd8e_service-img-3.webp"
               />
             </Reveal>

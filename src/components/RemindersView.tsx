@@ -53,7 +53,6 @@ export default function RemindersView({ onNewSequence }: RemindersViewProps) {
 
   React.useEffect(() => {
     fetchAPI('/api/v1/reminder-sequences')
-      .then(res => res.json())
       .then(res => {
         if (res.error) throw new Error(res.error);
         setSequences(res.data || []);
@@ -68,6 +67,19 @@ export default function RemindersView({ onNewSequence }: RemindersViewProps) {
 
   const selected = sequences.find((s) => s.id === selectedId) ?? sequences[0];
 
+  const togglePause = async (seqId: string) => {
+    const nextPaused = !paused[seqId];
+    try {
+      await fetchAPI(`/api/v1/reminder-sequences/${seqId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: nextPaused ? 'paused' : 'active' })
+      });
+      setPaused((p) => ({ ...p, [seqId]: nextPaused }));
+    } catch (err) {
+      console.error("Failed to toggle pause status", err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-1 min-h-0 w-full bg-white items-center justify-center">
@@ -78,8 +90,9 @@ export default function RemindersView({ onNewSequence }: RemindersViewProps) {
 
   if (error) {
     return (
-      <div className="flex flex-1 min-h-0 w-full bg-white items-center justify-center text-red-500">
-        <p>Error loading reminders: {error}</p>
+      <div className="flex flex-1 min-h-0 w-full bg-white flex-col items-center justify-center gap-1">
+        <p className="text-gray-500 text-sm font-medium">Couldn&apos;t load your reminders.</p>
+        <p className="text-gray-400 text-xs">{error}</p>
       </div>
     );
   }
@@ -171,7 +184,7 @@ export default function RemindersView({ onNewSequence }: RemindersViewProps) {
                     </span>
                     <span
                       role="button"
-                      onClick={(e) => { e.stopPropagation(); setPaused((p) => ({ ...p, [seq.id]: !p[seq.id] })); }}
+                      onClick={(e) => { e.stopPropagation(); togglePause(seq.id); }}
                       className="text-gray-400 hover:text-gray-700"
                     >
                       {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
@@ -237,7 +250,7 @@ export default function RemindersView({ onNewSequence }: RemindersViewProps) {
                 <ReminderTimeline
                   stages={selected.stages}
                   paused={paused[selected.id]}
-                  onPauseToggle={() => setPaused((p) => ({ ...p, [selected.id]: !p[selected.id] }))}
+                  onPauseToggle={() => togglePause(selected.id)}
                 />
               </div>
 

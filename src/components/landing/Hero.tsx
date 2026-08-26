@@ -1,19 +1,70 @@
 "use client"
 
-import { Star } from "lucide-react"
+import { CheckCircle2, TrendingUp } from "lucide-react"
 import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal'
 
 export function Hero() {
-  const cardImages = [
-    "69a5007e9793bec9aef0bae6_card.avif",
-    "69a5007db9ab99a268357410_card-3.avif",
-    "69a5007d21f950db130e28c9_card-6.avif",
-    "69a5007eb87553c5aa32934f_card-1.avif",
-    "69a5007e27ef20e6e3edd02e_card-4.avif",
-    "69a5007e9468539ba66cdd61_card-7.avif",
-    "69a5007dd38878bbefc784aa_card-8.avif",
-    "69a5007d920bdd6882dc8eb7_card-2.avif",
-    "69a5007d1354bb8698409c38_card-5.avif",
+  const cards = [
+    <div key="c1" className="flex h-full w-full flex-col justify-between bg-white p-4">
+      <div className="flex items-start justify-between">
+        <p className="text-[10px] font-medium text-[#585858]">Collection rate</p>
+        <TrendingUp className="h-3.5 w-3.5 text-[#22C55E]" strokeWidth={2} />
+      </div>
+      <div>
+        <span className="text-[28px] font-black leading-none text-[#131313]">84%</span>
+        <p className="mt-1 text-[9px] text-[#585858]">of invoices paid on time</p>
+      </div>
+    </div>,
+    <div key="c2" className="flex h-full w-full flex-col justify-between bg-[#131313] p-4 text-white">
+      <p className="text-[10px] font-medium text-white/60">Reminders sent</p>
+      <div>
+        <span className="text-[28px] font-black leading-none text-white">42</span>
+        <p className="mt-1 text-[9px] font-semibold text-[#22C55E]">$18,200 collected</p>
+      </div>
+    </div>,
+    <div key="c3" className="flex h-full w-full flex-col justify-center gap-2 bg-white p-4 text-center">
+      <p className="text-[9px] font-medium text-[#585858]">Reminder sequence</p>
+      <div className="flex items-center justify-center gap-1">
+        <span className="h-2 w-2 rounded-full bg-[#131313]" />
+        <span className="h-px w-3 bg-gray-300" />
+        <span className="h-2 w-2 rounded-full bg-[#131313]" />
+        <span className="h-px w-3 bg-gray-300" />
+        <span className="h-2 w-2 rounded-full border-2 border-[#22C55E]" />
+      </div>
+      <p className="text-[10px] font-semibold text-[#131313]">Day 3 &rarr; 7 &rarr; 14</p>
+    </div>,
+    <div key="c4" className="flex h-full w-full flex-col items-center justify-center gap-2 bg-white p-4 text-center">
+      <span className="text-[30px] font-black leading-none text-[#2563EB]">$730</span>
+      <p className="text-[9px] font-semibold text-[#585858]">Andi Permana &middot; outstanding</p>
+    </div>,
+    <div key="c5" className="flex h-full w-full flex-col justify-between bg-white p-4">
+      <p className="text-[10px] font-medium text-[#585858]">Days to pay</p>
+      <div>
+        <span className="text-[28px] font-black leading-none text-[#2563EB]">9</span>
+        <p className="mt-1 text-[9px] text-[#585858]">down from 21</p>
+      </div>
+    </div>,
+    <div key="c6" className="flex h-full w-full flex-col items-center justify-center gap-1 bg-white p-4 text-center">
+      <span className="text-[30px] font-black leading-none text-[#22C55E]">$9</span>
+      <p className="text-[9px] font-semibold text-[#585858]">flat fee, no cut</p>
+    </div>,
+    <div key="c7" className="flex h-full w-full flex-col justify-center gap-2 bg-white p-4">
+      <p className="text-[9px] font-medium text-[#585858]">Collection rate</p>
+      <div className="flex items-end gap-1">
+        <div className="h-4 w-2.5 rounded-sm bg-[#2563EB]/25" />
+        <div className="h-6 w-2.5 rounded-sm bg-[#2563EB]/45" />
+        <div className="h-8 w-2.5 rounded-sm bg-[#2563EB]/70" />
+        <div className="h-10 w-2.5 rounded-sm bg-[#2563EB]" />
+      </div>
+    </div>,
+    <div key="c8" className="flex h-full w-full flex-col items-center justify-center gap-1 bg-[#131313] p-4 text-center">
+      <span className="text-[30px] font-black leading-none text-white">0%</span>
+      <p className="text-[9px] font-semibold text-white/60">percentage cut, ever</p>
+    </div>,
+    <div key="c9" className="flex h-full w-full flex-col items-center justify-center gap-1 bg-white p-4 text-center">
+      <span className="text-[30px] font-black leading-none text-[#22C55E]">72%</span>
+      <p className="text-[9px] font-semibold text-[#585858]">client on-time rate</p>
+    </div>,
   ]
 
   return (
@@ -29,13 +80,6 @@ export function Hero() {
       }}
     >
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee-slow {
-          animation: marquee 35s linear infinite;
-        }
         @keyframes spin3d {
           0% { transform: rotateX(12deg) rotateY(0deg); }
           100% { transform: rotateX(12deg) rotateY(-360deg); }
@@ -81,10 +125,10 @@ export function Hero() {
               }}
             >
               <Reveal delay={700} triggerOnMount>
-                <div>Building the future with</div>
+                <div>Get paid faster,</div>
               </Reveal>
               <Reveal delay={780} triggerOnMount>
-                <div style={{ opacity: 0.73 }}>AI and strategy</div>
+                <div style={{ opacity: 0.73 }}>automatically</div>
               </Reveal>
             </h1>
 
@@ -101,7 +145,7 @@ export function Hero() {
                   maxWidth: "580px",
                 }}
               >
-                We help organizations unlock growth and efficiency through data-driven consulting and intelligent automation.
+                Escalating reminder emails for overdue invoices, connected read-only to your own Stripe. Flat monthly fee, no percentage cut.
               </div>
             </Reveal>
 
@@ -122,7 +166,7 @@ export function Hero() {
                     cursor: "pointer",
                   }}
                 >
-                  VIEW DEMO
+                  SEE PRICING
                 </button>
 
                 <button
@@ -168,13 +212,13 @@ export function Hero() {
             height: "200px",
           }}
         >
-          {cardImages.map((image, index) => {
+          {cards.map((card, index) => {
             const angle = index * 40; // 9 cards spaced 40 degrees apart
 
             return (
               <div
                 key={index}
-                className="absolute shadow-2xl transition-all duration-500 hover:scale-110 cursor-pointer"
+                className="absolute overflow-hidden rounded-2xl shadow-2xl transition-all duration-500 hover:scale-110 cursor-pointer border border-white/20"
                 style={{
                   width: "135px",
                   height: "135px",
@@ -183,14 +227,7 @@ export function Hero() {
                   backfaceVisibility: "visible",
                 }}
               >
-                <img
-                  src={`/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/${image}`}
-                  alt={`Card ${index + 1}`}
-                  className="w-full h-full object-cover border border-white/20 shadow-2xl"
-                  style={{
-                    borderRadius: "16px",
-                  }}
-                />
+                {card}
               </div>
             )
           })}
@@ -208,16 +245,9 @@ export function Hero() {
           }}
         >
           <div className="flex gap-1.5">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <Star
-                key={i}
-                size={16}
-                className="fill-lime-400 text-lime-400"
-                style={{ color: "rgb(214, 253, 112)" }}
-              />
-            ))}
+            <CheckCircle2 size={16} style={{ color: "rgb(214, 253, 112)" }} />
           </div>
-          <div>Rated 4.9/5 by 4,900+ clients</div>
+          <div>Never moves money. Never creates invoices. Read-only, always.</div>
         </div>
       </Reveal>
     </section>

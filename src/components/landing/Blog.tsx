@@ -7,19 +7,19 @@ export function Blog() {
   const cards = [
     {
       id: "1",
-      title: "Turning Data into Strategy: The Power of Analytics",
+      title: "Why 71% of Freelancers Get Paid Late (And What Fixes It)",
       image:
         "/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6961c58c9c176be6aada8c2f_blog-img-1_1x.webp",
     },
     {
       id: "2",
-      title: "5 Ways AI Can Streamline Business Operations",
+      title: "What 'Read-Only' Actually Means for Your Stripe Account",
       image:
         "/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6961c6ca3c9b5f744a47a796_blog-img-2_1x.webp",
     },
     {
       id: "3",
-      title: "Human + Machine: Finding the Perfect Balance",
+      title: "Writing a Firm Payment Reminder Without Sounding Rude",
       image:
         "/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6961c70052120388fb4e8c2a_blog-img-3_1x.webp",
     },
@@ -41,12 +41,12 @@ export function Blog() {
               </div>
 
               <h2 className="mb-4 text-5xl font-medium leading-[57.6px] tracking-[-2.88px] text-black">
-                Latest insights and trends
+                Getting paid, explained
               </h2>
 
               <p className="text-base leading-[22.4px] tracking-[-0.32px] text-[#585858]">
-                Whether you&apos;re optimizing today or building for tomorrow we help
-                you move faster with confidence.
+                Practical notes on late payments, reminder cadence, and running
+                a small business without chasing invoices by hand.
               </p>
             </div>
 

@@ -38,6 +38,8 @@
   ],
   "exclude": [
     "node_modules",
-    "reffolder"
+    "reffolder",
+    "api",
+    "supabase"
   ]
 }

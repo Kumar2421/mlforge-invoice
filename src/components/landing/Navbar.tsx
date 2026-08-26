@@ -1,9 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
-import { ChevronDown, Menu, X } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export const Navbar = () => {
@@ -14,30 +13,29 @@ export const Navbar = () => {
       <div className="px-[52px] py-4">
         <div className="mx-7 max-w-5xl">
           <div className="flex items-center justify-between">
-            <Link href="/" className="pr-14 flex-shrink-0">
-              <Image
-                src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/69bc6c8e343f8f1f1832309a_aeline-logo.svg"
-                alt="Aeline"
-                width={114}
-                height={30}
-                priority
-              />
+            <Link href="/" className="pr-14 flex-shrink-0 flex items-center gap-2.5">
+              <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+                <circle cx="14" cy="14" r="14" fill="#22C55E" />
+                <path
+                  d="M9 18C9 14 12 10 18 9C17 13 15 16 11 18C10.5 18.3 9.5 18.3 9 18Z"
+                  fill="white"
+                  stroke="white"
+                  strokeWidth="0.5"
+                />
+              </svg>
+              <span className="text-white font-sans font-bold text-base tracking-tight">Payment Reminders</span>
             </Link>
 
             <div className="hidden lg:flex items-center gap-12 flex-1 justify-center">
-              <a href="#" className="text-white font-sans font-normal text-base">
-                Home
+              <a href="#how-it-works" className="text-white font-sans font-normal text-base">
+                How it works
               </a>
-              <a href="#" className="text-white font-sans font-normal text-base">
-                Services
+              <a href="#features" className="text-white font-sans font-normal text-base">
+                Features
               </a>
-              <a href="#" className="text-white font-sans font-normal text-base">
-                About us
+              <a href="#pricing" className="text-white font-sans font-normal text-base">
+                Pricing
               </a>
-              <button className="text-white font-sans font-normal text-base flex items-center gap-2">
-                More links
-                <ChevronDown className="w-4 h-4" />
-              </button>
             </div>
 
             <Link
@@ -67,19 +65,15 @@ export const Navbar = () => {
 
           {isOpen && (
             <div className="lg:hidden mt-4 pt-4 pb-4 border-t border-white/20 flex flex-col gap-4">
-              <a href="#" className="text-white font-sans font-normal text-base">
-                Home
+              <a href="#how-it-works" className="text-white font-sans font-normal text-base">
+                How it works
               </a>
-              <a href="#" className="text-white font-sans font-normal text-base">
-                Services
+              <a href="#features" className="text-white font-sans font-normal text-base">
+                Features
               </a>
-              <a href="#" className="text-white font-sans font-normal text-base">
-                About us
+              <a href="#pricing" className="text-white font-sans font-normal text-base">
+                Pricing
               </a>
-              <button className="text-white font-sans font-normal text-base flex items-center gap-2">
-                More links
-                <ChevronDown className="w-4 h-4" />
-              </button>
             </div>
           )}
         </div>

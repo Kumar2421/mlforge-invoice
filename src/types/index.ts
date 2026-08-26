@@ -22,6 +22,7 @@ export interface Invoice {
   dueDate: string;
   clientId: string;
   clientName: string;
+  clientEmail: string;
   clientAvatarImg: number;
   amount: number;
   status: InvoiceStatus;

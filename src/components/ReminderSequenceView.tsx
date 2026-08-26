@@ -1,11 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { ChevronRight, Upload, Zap, ChevronDown, Plus, Trash2, Eye, Send } from "lucide-react";
-
-const overdueInvoices = [
-  { id: "INV-#7819090", client: "Andi Permana", email: "andi@permanastudio.com", amount: "$3,850.00", daysOverdue: 3, avatarImg: 2 },
-];
+import React, { useState, useEffect } from "react";
+import { ChevronRight, Zap, ChevronDown, Plus, Trash2, Eye, Send, Loader2 } from "lucide-react";
+import { fetchAPI } from "@/utils/api";
+import type { Invoice } from "@/types";
 
 const toneOptions = ["gentle", "firm", "final"] as const;
 type Tone = (typeof toneOptions)[number];
@@ -29,13 +27,36 @@ const initialStages: StageDraft[] = [
   { day: 14, tone: "final", subject: "Final notice: invoice significantly overdue", body: "Hi {{client}}, this is a final notice for invoice {{invoice}} ({{amount}}), now two weeks overdue. Please settle this promptly to avoid further action." },
 ];
 
-export default function ReminderSequenceView() {
+interface ReminderSequenceViewProps {
+  onBack?: () => void;
+}
+
+export default function ReminderSequenceView({ onBack }: ReminderSequenceViewProps) {
   const [stages, setStages] = useState<StageDraft[]>(initialStages);
   const [previewStage, setPreviewStage] = useState(0);
   const [autoPause, setAutoPause] = useState(true);
   const [repeatFinal, setRepeatFinal] = useState(false);
+  const [overdueInvoices, setOverdueInvoices] = useState<Invoice[]>([]);
+  const [selectedInvoiceIndex, setSelectedInvoiceIndex] = useState<number>(-1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isActivating, setIsActivating] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
-  const invoice = overdueInvoices[0];
+  useEffect(() => {
+    fetchAPI('/api/v1/invoices')
+      .then(res => {
+        // Filter only Overdue status
+        const overdue = ((res.data || []) as Invoice[]).filter((inv) => inv.status === 'Overdue');
+        setOverdueInvoices(overdue);
+        if (overdue.length > 0) {
+          setSelectedInvoiceIndex(0);
+        }
+      })
+      .catch(err => console.error("Failed to load overdue invoices", err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const invoice = selectedInvoiceIndex >= 0 ? overdueInvoices[selectedInvoiceIndex] : null;
   const current = stages[previewStage];
 
   function updateStage(index: number, patch: Partial<StageDraft>) {
@@ -52,25 +73,68 @@ export default function ReminderSequenceView() {
     setPreviewStage(0);
   }
 
+  const handleActivateSequence = async () => {
+    if (!invoice) {
+      alert("Please select an overdue invoice first.");
+      return;
+    }
+    setIsActivating(true);
+    try {
+      await fetchAPI('/api/v1/reminder-sequences', {
+        method: 'POST',
+        body: JSON.stringify({
+          invoiceId: invoice.id,
+          clientId: invoice.clientId,
+          stages: stages
+        })
+      });
+      if (onBack) onBack();
+    } catch (err) {
+      console.error("Failed to activate reminder sequence", err);
+      alert("Error activating reminder sequence. Make sure one doesn't already exist for this invoice.");
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+        <Loader2 className="w-8 h-8 animate-spin text-[#074E5B]" />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-1 min-h-0 w-full bg-[#F7F8FA]">
+    <div className="flex flex-1 min-h-0 w-full bg-[#F7F8FA] relative">
+      {isActivating && (
+        <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-50">
+          <Loader2 className="w-8 h-8 animate-spin text-[#074E5B]" />
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col p-6 min-h-0 overflow-hidden">
         {/* ===== Header ===== */}
         <div className="flex items-start justify-between mb-6">
           <div>
             <div className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 mb-1">
-              <span>Reminders</span>
+              <span className="cursor-pointer hover:underline" onClick={onBack}>Reminders</span>
               <ChevronRight className="w-3 h-3" />
               <span className="text-gray-400">New Sequence</span>
             </div>
             <h2 className="text-[20px] font-black text-gray-900 tracking-tight">New Reminder Sequence</h2>
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <Upload className="w-3.5 h-3.5" />
-              Save as Draft
+            <button
+              onClick={onBack}
+              className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
             </button>
-            <button className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold text-white bg-[#074E5B] rounded-lg hover:bg-[#053E48] transition-colors">
+            <button
+              onClick={handleActivateSequence}
+              className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold text-white bg-[#074E5B] rounded-lg hover:bg-[#053E48] transition-colors"
+            >
               <Zap className="w-3.5 h-3.5" />
               Activate Sequence
             </button>
@@ -82,25 +146,72 @@ export default function ReminderSequenceView() {
           {/* Left Column: Form */}
           <div className="w-[420px] flex flex-col gap-4 shrink-0 overflow-y-auto no-scrollbar pr-1">
             {/* Select invoice */}
-            <div className="bg-white border border-[#ECECEC] rounded-xl p-4">
+            <div className="bg-white border border-[#ECECEC] rounded-xl p-4 relative">
               <h3 className="text-[12px] font-bold text-gray-900 mb-4">Select Overdue Invoice</h3>
-              <div className="flex items-center justify-between border border-gray-200 rounded-lg p-2.5 px-3 cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                    <img src={`https://i.pravatar.cc/100?img=${invoice.avatarImg}`} alt={invoice.client} className="w-full h-full object-cover grayscale opacity-80" />
+              
+              {overdueInvoices.length === 0 ? (
+                <p className="text-[11px] text-gray-500 py-2">No overdue invoices available for sequences.</p>
+              ) : (
+                <>
+                  <div 
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className="flex items-center justify-between border border-gray-200 rounded-lg p-2.5 px-3 cursor-pointer hover:bg-gray-50"
+                  >
+                    {invoice ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
+                          <img 
+                            src={`https://i.pravatar.cc/100?img=${invoice.clientAvatarImg || 1}`} 
+                            alt={invoice.clientName} 
+                            className="w-full h-full object-cover grayscale opacity-80" 
+                          />
+                        </div>
+                        <div>
+                          <p className="font-bold text-gray-900 leading-tight">{invoice.clientName}</p>
+                          <p className="text-[10px] text-gray-400 font-medium">{invoice.id}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-gray-400">Choose overdue invoice...</span>
+                    )}
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
                   </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-gray-900">{invoice.client}</p>
-                    <p className="text-[9px] text-gray-400">{invoice.email}</p>
-                  </div>
-                </div>
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              </div>
-              <div className="flex items-center justify-between mt-3 text-[11px]">
-                <span className="font-bold text-gray-900">{invoice.id}</span>
-                <span className="font-bold text-gray-900">{invoice.amount}</span>
-                <span className="font-bold text-red-500">{invoice.daysOverdue} days overdue</span>
-              </div>
+
+                  {showDropdown && (
+                    <div className="absolute left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+                      {overdueInvoices.map((inv, idx) => (
+                        <div
+                          key={inv.id}
+                          onClick={() => {
+                            setSelectedInvoiceIndex(idx);
+                            setShowDropdown(false);
+                          }}
+                          className="flex items-center justify-between p-2.5 px-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden shrink-0">
+                              <img src={`https://i.pravatar.cc/100?img=${inv.clientAvatarImg || 1}`} alt={inv.clientName} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <p className="text-[11px] font-bold text-gray-900 leading-tight">{inv.clientName}</p>
+                              <p className="text-[9px] text-gray-400">{inv.id}</p>
+                            </div>
+                          </div>
+                          <span className="text-[11px] font-bold text-gray-900">${inv.amount}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {invoice && (
+                    <div className="flex items-center justify-between mt-3 text-[11px]">
+                      <span className="font-bold text-gray-900">{invoice.id}</span>
+                      <span className="font-bold text-gray-900">${invoice.amount}.00</span>
+                      <span className="font-bold text-red-500">Overdue</span>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Escalation stages */}
@@ -219,15 +330,15 @@ export default function ReminderSequenceView() {
               <div className="max-w-[520px] mx-auto bg-white rounded-lg shadow-sm border border-gray-100 p-8 min-h-full">
                 <div className="space-y-1.5 pb-4 mb-5 border-b border-gray-100 text-[11px]">
                   <p><span className="text-gray-400 font-medium">From:</span> <span className="font-semibold text-gray-800">billing@mlforge.com</span></p>
-                  <p><span className="text-gray-400 font-medium">To:</span> <span className="font-semibold text-gray-800">{invoice.email}</span></p>
+                  <p><span className="text-gray-400 font-medium">To:</span> <span className="font-semibold text-gray-800">{invoice ? invoice.clientEmail || `${invoice.clientName.toLowerCase()}@example.com` : "client@example.com"}</span></p>
                   <p><span className="text-gray-400 font-medium">Subject:</span> <span className="font-semibold text-gray-800">{current?.subject}</span></p>
                 </div>
 
                 <p className="text-[13px] text-gray-700 leading-relaxed mb-5">
                   {current?.body
-                    .replace("{{client}}", invoice.client)
-                    .replace("{{invoice}}", invoice.id)
-                    .replace("{{amount}}", invoice.amount)}
+                    .replace("{{client}}", invoice ? invoice.clientName : "Client")
+                    .replace("{{invoice}}", invoice ? invoice.id : "INV-XXXX")
+                    .replace("{{amount}}", invoice ? `$${invoice.amount}` : "$0.00")}
                 </p>
 
                 <button className="bg-[#22C55E] hover:bg-[#16A34A] text-white text-[12px] font-bold py-2.5 px-5 rounded-lg transition-colors">
@@ -235,7 +346,7 @@ export default function ReminderSequenceView() {
                 </button>
 
                 <p className="text-[10px] text-gray-400 font-medium mt-8 pt-4 border-t border-gray-100">
-                  Sent via mlforge Invoice on behalf of Jamil Suta. <a href="#" className="underline decoration-gray-300 underline-offset-2">Manage reminder preferences</a>
+                  Sent via Payment Reminders on behalf of Jamil Suta. <a href="#" className="underline decoration-gray-300 underline-offset-2">Manage reminder preferences</a>
                 </p>
               </div>
             </div>

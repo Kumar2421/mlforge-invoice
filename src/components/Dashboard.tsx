@@ -36,11 +36,12 @@ import ReportsView from "./ReportsView";
 import RemindersView from "./RemindersView";
 import SettingsView from "./SettingsView";
 import { fetchAPI } from "@/utils/api";
+import type { Invoice, Payment } from "@/types";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("Dashboard");
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [payments, setPayments] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -57,9 +58,24 @@ export default function Dashboard() {
   }, []);
 
   const totalInvoiced = invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
-  const totalPaid = payments.filter(p => p.status === 'Succeeded' || p.status === 'Paid').reduce((sum, p) => sum + (p.amount || 0), 0);
-  const outstanding = invoices.filter(inv => inv.status !== 'Paid' && inv.status !== 'Cancelled' && inv.status !== 'Void').reduce((sum, inv) => sum + (inv.amount || 0), 0);
+  const totalPaid = payments.filter(p => p.status === 'Succeeded').reduce((sum, p) => sum + (p.amount || 0), 0);
+  const outstanding = invoices.filter(inv => inv.status !== 'Paid' && inv.status !== 'Cancelled').reduce((sum, inv) => sum + (inv.amount || 0), 0);
   const overdueCount = invoices.filter(inv => inv.status === 'Overdue').length;
+
+  const paidInvoicesCount = invoices.filter(i => i.status === 'Paid').length;
+  const totalInvoicesCount = invoices.length;
+  
+  const breakdownPaid = invoices.filter(i => i.status === 'Paid').reduce((sum, i) => sum + (i.amount || 0), 0);
+  const breakdownPending = invoices.filter(i => i.status === 'Pending').reduce((sum, i) => sum + (i.amount || 0), 0);
+  const breakdownOverdue = invoices.filter(i => i.status === 'Overdue').reduce((sum, i) => sum + (i.amount || 0), 0);
+  const cancelledCount = invoices.filter(i => i.status === 'Cancelled').length;
+
+  const totalBreakdown = breakdownPaid + breakdownPending + breakdownOverdue || 1;
+  const paidPct = (breakdownPaid / totalBreakdown) * 100;
+  const pendingPct = (breakdownPending / totalBreakdown) * 100;
+  const overduePct = (breakdownOverdue / totalBreakdown) * 100;
+
+  const latestPaidInvoice = invoices.find(i => i.status === 'Paid');
 
   return (
     <div className="flex h-screen bg-white text-[#1E293B] font-sans antialiased overflow-hidden">
@@ -79,7 +95,7 @@ export default function Dashboard() {
               />
             </svg>
           </div>
-          <span className="text-[15px] font-extrabold text-gray-900 tracking-tight">mlforge Invoice</span>
+          <span className="text-[15px] font-extrabold text-gray-900 tracking-tight">Payment Reminders</span>
         </div>
 
         {/* Main Menu label */}
@@ -239,7 +255,7 @@ export default function Dashboard() {
         {activeTab === "Invoices" ? (
           <InvoicesView onNewSequence={() => setActiveTab("NewSequence")} />
         ) : activeTab === "NewSequence" ? (
-          <ReminderSequenceView />
+          <ReminderSequenceView onBack={() => setActiveTab("Reminders")} />
         ) : activeTab === "Clients" ? (
           <ClientsView />
         ) : activeTab === "Payments" ? (
@@ -376,14 +392,14 @@ export default function Dashboard() {
                 <div>
                   <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Total Invoiced</span>
                   <p className="text-[20px] font-black text-gray-900 tracking-tight leading-none mt-0.5">
-                    $101,480<span className="text-[12px] text-gray-300 font-bold">.00</span>
+                    ${totalInvoiced.toLocaleString()}<span className="text-[12px] text-gray-300 font-bold">.00</span>
                   </p>
                   <p className="text-[9px] text-gray-400 font-medium mt-1">Revenue peaked in <span className="font-bold text-gray-600">September</span></p>
                 </div>
                 <div>
                   <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Projected Revenue</span>
                   <p className="text-[20px] font-black text-gray-900 tracking-tight leading-none mt-0.5">
-                    $25,600<span className="text-[12px] text-gray-300 font-bold">.00</span>
+                    ${(totalPaid + outstanding).toLocaleString()}<span className="text-[12px] text-gray-300 font-bold">.00</span>
                   </p>
                   <p className="text-[9px] text-teal-600 font-semibold mt-1">AI forecast +6.9% growth expected</p>
                 </div>
@@ -503,53 +519,57 @@ export default function Dashboard() {
                 </button>
               </div>
               <div className="flex items-baseline gap-0.5 mt-1">
-                <span className="text-[32px] font-black text-gray-900 leading-none">147</span>
-                <span className="text-[14px] text-gray-300 font-bold">/162</span>
+                <span className="text-[32px] font-black text-gray-900 leading-none">{paidInvoicesCount}</span>
+                <span className="text-[14px] text-gray-300 font-bold">/{totalInvoicesCount}</span>
               </div>
 
               {/* Breakdown stats */}
               <div className="grid grid-cols-3 gap-2.5 mt-4">
                 <div>
                   <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Paid</span>
-                  <p className="text-[12px] font-black text-gray-900 mt-0.5">$15,680<span className="text-[9px] text-gray-300">.00</span></p>
+                  <p className="text-[12px] font-black text-gray-900 mt-0.5">${breakdownPaid.toLocaleString()}<span className="text-[9px] text-gray-300">.00</span></p>
                 </div>
                 <div>
                   <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Pending</span>
-                  <p className="text-[12px] font-black text-gray-900 mt-0.5">$2,940<span className="text-[9px] text-gray-300">.00</span></p>
+                  <p className="text-[12px] font-black text-gray-900 mt-0.5">${breakdownPending.toLocaleString()}<span className="text-[9px] text-gray-300">.00</span></p>
                 </div>
                 <div>
                   <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Overdue</span>
-                  <p className="text-[12px] font-black text-gray-900 mt-0.5">$620<span className="text-[9px] text-gray-300">.00</span></p>
+                  <p className="text-[12px] font-black text-gray-900 mt-0.5">${breakdownOverdue.toLocaleString()}<span className="text-[9px] text-gray-300">.00</span></p>
                 </div>
               </div>
 
-              {/* 3 Cancelled label */}
+              {/* Cancelled label */}
               <div className="flex justify-end mt-1">
-                <span className="text-[9px] font-bold text-red-500">3 Cancelled</span>
+                <span className="text-[9px] font-bold text-red-500">{cancelledCount} Cancelled</span>
               </div>
 
               {/* Segmented progress bar */}
               <div className="w-full h-3 rounded-full overflow-hidden flex gap-[2px] mt-2">
-                <div className="w-[55%] bg-[#074E5B] rounded-l-full" />
-                <div className="w-[25%] bg-[#F59E0B]" />
-                <div className="w-[20%] bg-[#EF4444] rounded-r-full" />
+                <div className="bg-[#074E5B] rounded-l-full" style={{ width: `${paidPct}%` }} />
+                <div className="bg-[#F59E0B]" style={{ width: `${pendingPct}%` }} />
+                <div className="bg-[#EF4444] rounded-r-full" style={{ width: `${overduePct}%` }} />
               </div>
 
               {/* Latest Paid Invoice */}
               <div className="mt-auto pt-5 border-t border-gray-100">
                 <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Latest Paid Invoice</span>
-                <div className="flex items-center justify-between mt-2 bg-[#FAFAFA] border border-[#ECECEC] rounded-xl p-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
-                      <FileText className="w-4 h-4 text-gray-500" />
+                {latestPaidInvoice ? (
+                  <div className="flex items-center justify-between mt-2 bg-[#FAFAFA] border border-[#ECECEC] rounded-xl p-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <FileText className="w-4 h-4 text-gray-500" />
+                      </div>
+                      <div>
+                        <p className="text-[12px] font-bold text-gray-900">{latestPaidInvoice.id}</p>
+                        <p className="text-[9px] text-gray-400 font-medium">{latestPaidInvoice.clientName}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[12px] font-bold text-gray-900">INV-#7819090</p>
-                      <p className="text-[9px] text-gray-400 font-medium">Andi Permana</p>
-                    </div>
+                    <span className="text-[9px] font-bold text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full bg-white">Paid</span>
                   </div>
-                  <span className="text-[9px] font-bold text-gray-600 border border-gray-200 px-2 py-0.5 rounded-full bg-white">Paid</span>
-                </div>
+                ) : (
+                  <p className="text-[11px] text-gray-400 mt-2 font-medium">No paid invoices found.</p>
+                )}
               </div>
             </div>
           </div>
@@ -613,9 +633,9 @@ export default function Dashboard() {
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                          <img src={`https://i.pravatar.cc/100?img=${row.client?.avatarImg || 1}`} alt={row.client?.name || 'Unknown'} className="w-full h-full object-cover" />
+                          <img src={`https://i.pravatar.cc/100?img=${row.clientAvatarImg || 1}`} alt={row.clientName || 'Unknown'} className="w-full h-full object-cover" />
                         </div>
-                        <span className="font-medium text-gray-700">{row.client?.name || 'Unknown'}</span>
+                        <span className="font-medium text-gray-700">{row.clientName || 'Unknown'}</span>
                       </div>
                     </td>
                     <td className="py-3 px-3 font-bold text-gray-900">${row.amount?.toLocaleString() || '0'}.00</td>

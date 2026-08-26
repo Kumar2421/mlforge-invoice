@@ -14,44 +14,44 @@ interface Review {
 const reviews: Review[] = [
   {
     name: "Ken Masters",
-    username: "@kmasters",
-    body: "“Our productivity has nearly doubled since onboarding. Automation features removed repetitive tasks, allowing our team to focus on building instead of managing operations.”",
+    username: "Freelance Developer",
+    body: "“I used to spend an hour every Friday writing awkward follow-up emails. Now it just happens, and clients pay faster because the reminders don't wait for me to feel like nagging.”",
     profile: "https://images.shadcnspace.com/assets/profiles/rough.webp",
   },
   {
     name: "Kira Athrun",
-    username: "@kathrun",
-    body: "“What surprised us most was how quickly our team adapted. Minimal learning curve, excellent documentation, and powerful features make it a must-have for modern SaaS companies.”",
+    username: "Design Agency Owner",
+    body: "“Setup took five minutes. Connected Stripe, picked the default cadence, done. Our average days-to-pay dropped noticeably in the first month.”",
     profile: "https://images.shadcnspace.com/assets/profiles/albert.webp",
   },
   {
     name: "Lirael Nassun",
-    username: "@lnassun",
-    body: "“This is easily one of the most reliable SaaS tools we’ve adopted. The UI is intuitive, integrations are seamless, and it saves us countless hours every week.”",
+    username: "Independent Consultant",
+    body: "“Read-only was the whole reason I trusted it. It can't touch my money, it just tells clients they owe me &mdash; more firmly each week.”",
     profile: "https://images.shadcnspace.com/assets/profiles/linda.webp",
   },
   {
     name: "Jessica",
-    username: "@jessica",
-    body: "Switching to this platform streamlined our entire workflow. Setup was effortless, performance improved instantly, and our team now ships features faster without worrying about infrastructure.",
+    username: "Property Manager",
+    body: "Not just for freelancers &mdash; I use it for rent invoices to tenants. The escalating tone means I don't have to be the one sending the firm email.",
     profile: "https://images.shadcnspace.com/assets/profiles/jessica.webp",
   },
   {
     name: "Jenny",
-    username: "@jenny",
-    body: "“We evaluated multiple solutions, but this stood out immediately. It’s fast, scalable, and thoughtfully designed for growing teams that need stability without added complexity.”",
+    username: "Marketing Contractor",
+    body: "“Flat $9/month versus a percentage cut was an easy call. I keep everything I collect.”",
     profile: "https://images.shadcnspace.com/assets/profiles/jenny.webp",
   },
   {
-    name: "Kira Athrun",
-    username: "@kathrun-2",
-    body: "“What surprised us most was how quickly our team adapted. Minimal learning curve, excellent documentation, and powerful features make it a must-have for modern SaaS companies.”",
+    name: "Marcus Odenwald",
+    username: "Small Business Owner",
+    body: "“The mute-per-client option matters more than I expected &mdash; a couple of long-term clients just need a heads up, not an escalation.”",
     profile: "https://images.shadcnspace.com/assets/profiles/albert.webp",
   },
   {
-    name: "Ken Masters",
-    username: "@kmasters-2",
-    body: "“Our productivity has nearly doubled since onboarding. Automation features removed repetitive tasks, allowing our team to focus on building instead of managing operations.”",
+    name: "Priya Nair",
+    username: "Freelance Illustrator",
+    body: "“I stopped dreading the end of every project. The reminders do the uncomfortable part so I don't have to.”",
     profile: "https://images.shadcnspace.com/assets/profiles/rough.webp",
   },
 ]
@@ -102,10 +102,10 @@ export function Testimonials() {
               </span>
             </div>
             <h2 className="mb-8 text-5xl font-medium text-[#d6fd80]">
-              What they say about us?
+              People who stopped chasing payments
             </h2>
             <p className="max-w-xl text-base text-gray-600">
-              Here&apos;s what they shared about their experience working with our team.
+              Freelancers, agencies, and small businesses using escalating reminders instead of awkward follow-up emails.
             </p>
           </div>
         </Reveal>

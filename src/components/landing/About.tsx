@@ -5,7 +5,7 @@ import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Rev
 
 export function About() {
   return (
-    <section className="w-full bg-white">
+    <section id="how-it-works" className="w-full bg-white">
       <div className="pt-[72px]">
         <div className="px-[52px]">
           <div className="mx-auto w-full max-w-[1280px]">
@@ -14,7 +14,7 @@ export function About() {
                 <div className="flex items-center gap-3">
                   <div className="h-1 w-1 rounded-full bg-foreground"></div>
                   <span className="font-mono text-sm font-medium uppercase tracking-[1.92px] text-foreground">
-                    About us
+                    How it works
                   </span>
                 </div>
 
@@ -22,19 +22,19 @@ export function About() {
 
                 <div className="w-full max-w-[656px]">
                   <h2 className="text-center text-[56px] font-bold leading-[1.2] text-foreground">
-                    A global consulting partner dedicated to building{' '}
+                    Three steps, then{' '}
                     <span className="inline-flex items-center gap-[5.6px]">
                       <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-400 text-lg font-bold text-white">
-                        ⚙
+                        &#128279;
                       </span>
-                      smarter
+                      never chase
                     </span>{' '}
-                    and{' '}
+                    a{' '}
                     <span className="inline-flex items-center gap-[5.6px]">
                       <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-lime text-lg font-bold text-black">
-                        💡
+                        &#128276;
                       </span>
-                      more adaptive
+                      late payment
                     </span>
                   </h2>
                 </div>
@@ -70,19 +70,14 @@ export function About() {
                   />
                   <div className="relative z-10 flex h-full flex-col justify-between gap-16 md:gap-0">
                     <div>
-                      <Image
-                        src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/692a148227a37705feded0ce_ipsum-logo.svg"
-                        alt="Ipsum Logo"
-                        width={80}
-                        height={30}
-                        className="h-auto w-20"
-                      />
+                      <span className="inline-block rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold uppercase tracking-widest text-black">
+                        Stripe Connect
+                      </span>
                     </div>
                     <div className="rounded-none bg-white p-6 text-black">
-                      <div className="text-4xl font-bold">120+</div>
+                      <div className="text-4xl font-bold">1</div>
                       <p className="mt-2 text-sm leading-relaxed">
-                        Collaborating with leading AI and cloud technology
-                        providers.
+                        Connect your Stripe account with a restricted, read-only key.
                       </p>
                     </div>
                   </div>
@@ -98,16 +93,16 @@ export function About() {
                 >
                   <div>
                     <div className="text-sm font-medium text-foreground">
-                      Commitment to measurable
+                      We watch for overdue
                     </div>
                     <div className="mt-3 text-4xl font-bold text-foreground">
-                      100%
+                      2
                     </div>
                   </div>
                   <div className="mt-6 flex flex-col gap-4">
                     <p className="text-sm leading-relaxed text-foreground">
-                      &ldquo;Their automation strategy completely reshaped how we work.
-                      It&apos;s efficient, intelligent, and seamless.&rdquo;
+                      &ldquo;The moment an invoice passes its due date, an escalating
+                      reminder sequence starts on its own.&rdquo;
                     </p>
                     <div className="flex gap-2">
                       <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white">
@@ -154,14 +149,14 @@ export function About() {
                 >
                   <div>
                     <div className="text-sm font-medium text-foreground">
-                      Data Points
+                      Escalation Stages
                     </div>
                     <div className="mt-3 text-4xl font-bold text-foreground">
-                      520k+
+                      3
                     </div>
                   </div>
                   <div className="mt-4 text-sm leading-relaxed text-foreground">
-                    Analyzed monthly to power smarter business strategies.
+                    Day 3, Day 7, Day 14 &mdash; each one firmer than the last.
                   </div>
                 </div>
               </Reveal>
@@ -171,8 +166,8 @@ export function About() {
                   className="flex items-center justify-between rounded-none p-5 text-white h-full min-h-[80px]"
                   style={{ backgroundColor: 'rgb(19, 19, 19)' }}
                 >
-                  <span className="text-sm font-medium">Continents</span>
-                  <span className="text-2xl font-bold">20+</span>
+                  <span className="text-sm font-medium">Percentage cut</span>
+                  <span className="text-2xl font-bold">0%</span>
                 </div>
               </Reveal>
             </div>
