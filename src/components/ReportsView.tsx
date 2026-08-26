@@ -1,24 +1,52 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowRight, MoreHorizontal } from "lucide-react";
+import { fetchAPI } from "@/utils/api";
 
-const collectionByMonth = [
-  { month: "Jul", value: 72, height: 55 },
-  { month: "Aug", value: 78, height: 68 },
-  { month: "Sep", value: 91, height: 92 },
-  { month: "Oct", value: 84, height: 78 },
-];
-
-const revenueByClient = [
-  { name: "Jamal Wirawan", amount: 21300, pct: 100 },
-  { name: "Eka Rahmani", amount: 15600, pct: 73 },
-  { name: "Andi Permana", amount: 12480, pct: 59 },
-  { name: "Bella Sandi", amount: 8900, pct: 42 },
-  { name: "Citra Dewi", amount: 6420, pct: 30 },
-];
+type ReportsData = {
+  reminderEffectiveness: number;
+  avgDaysToPay: number;
+  collectionRate: number;
+  collectionByMonth: Array<{ month: string; value: number; height: number }>;
+  revenueByClient: Array<{ name: string; amount: number; pct: number }>;
+};
 
 export default function ReportsView() {
+  const [report, setReport] = useState<ReportsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAPI("/api/v1/reports")
+      .then((res) => setReport(res.data))
+      .catch((err) => console.error("Failed to load reports", err))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  if (isLoading) {
+    return (
+      <main className="flex-1 overflow-y-auto no-scrollbar px-6 pt-5 pb-6 space-y-4">
+        <div>
+          <h2 className="text-[18px] font-black text-gray-900 tracking-tight">Reports</h2>
+          <p className="text-[11px] text-gray-400 font-medium mt-0.5">How well your reminders are working.</p>
+        </div>
+        <div className="rounded-2xl border border-[#ECECEC] bg-white p-6 text-sm text-gray-500">Loading reports...</div>
+      </main>
+    );
+  }
+
+  if (!report) {
+    return (
+      <main className="flex-1 overflow-y-auto no-scrollbar px-6 pt-5 pb-6 space-y-4">
+        <div>
+          <h2 className="text-[18px] font-black text-gray-900 tracking-tight">Reports</h2>
+          <p className="text-[11px] text-gray-400 font-medium mt-0.5">How well your reminders are working.</p>
+        </div>
+        <div className="rounded-2xl border border-[#ECECEC] bg-white p-6 text-sm text-gray-500">No report data yet.</div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex-1 overflow-y-auto no-scrollbar px-6 pt-5 pb-6 space-y-4">
       <div>
@@ -31,8 +59,8 @@ export default function ReportsView() {
         <div className="bg-[#1E1E24] text-white rounded-2xl p-4 flex flex-col justify-between">
           <div>
             <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Reminder Effectiveness</span>
-            <p className="text-[28px] font-black leading-none mt-2">62%</p>
-            <p className="text-[11px] text-gray-300 font-medium leading-snug mt-2">of overdue invoices paid within 48h of a Day-3 reminder.</p>
+            <p className="text-[28px] font-black leading-none mt-2">{report.reminderEffectiveness}%</p>
+            <p className="text-[11px] text-gray-300 font-medium leading-snug mt-2">Proxy: paid invoices that closed within 48h of first reminder.</p>
           </div>
           <div className="flex items-center gap-1 mt-3">
             <span className="w-4 h-[2px] bg-white rounded-full" />
@@ -43,13 +71,13 @@ export default function ReportsView() {
 
         <div className="bg-white border border-[#ECECEC] rounded-2xl p-4">
           <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Avg. Days to Pay</span>
-          <p className="text-[28px] font-black text-gray-900 leading-none mt-2">9<span className="text-[14px] text-gray-300 font-bold"> days</span></p>
-          <p className="text-[10px] text-gray-500 font-medium mt-2">Down from <span className="font-bold text-gray-700">21 days</span> before reminders</p>
+          <p className="text-[28px] font-black text-gray-900 leading-none mt-2">{report.avgDaysToPay}<span className="text-[14px] text-gray-300 font-bold"> days</span></p>
+          <p className="text-[10px] text-gray-500 font-medium mt-2">Computed from paid invoices and matching payments.</p>
         </div>
 
         <div className="bg-white border border-[#ECECEC] rounded-2xl p-4">
           <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Collection Rate</span>
-          <p className="text-[28px] font-black text-gray-900 leading-none mt-2">84<span className="text-[14px] text-gray-300 font-bold">%</span></p>
+          <p className="text-[28px] font-black text-gray-900 leading-none mt-2">{report.collectionRate}<span className="text-[14px] text-gray-300 font-bold">%</span></p>
           <div className="grid grid-cols-5 gap-[3px] mt-2">
             {[1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1].map((v, i) => (
               <span key={i} className={`w-[4px] h-[4px] rounded-full ${v ? "bg-[#074E5B]" : "bg-[#E5E7EB]"}`} />
@@ -78,7 +106,7 @@ export default function ReportsView() {
             ))}
           </div>
           <div className="absolute left-10 right-0 top-0 bottom-0 flex items-end justify-around">
-            {collectionByMonth.map((m) => (
+            {report.collectionByMonth.map((m) => (
               <div key={m.month} className="flex flex-col items-center relative">
                 <span className="text-[9px] font-bold text-gray-600 mb-1">{m.value}%</span>
                 <div className="flex items-end gap-[2px] h-[120px]">
@@ -100,7 +128,7 @@ export default function ReportsView() {
           </button>
         </div>
         <div className="space-y-3">
-          {revenueByClient.map((c) => (
+          {report.revenueByClient.map((c) => (
             <div key={c.name} className="flex items-center gap-3">
               <span className="text-[11px] font-semibold text-gray-700 w-32 shrink-0 truncate">{c.name}</span>
               <div className="flex-1 h-2 rounded-full bg-[#F0F0F0] overflow-hidden">

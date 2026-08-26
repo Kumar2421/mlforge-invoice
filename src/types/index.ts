@@ -56,3 +56,11 @@ export interface ReminderSequence {
   paused: boolean;
   stages: ReminderStage[];
 }
+
+export interface UserSettings {
+  senderName: string;
+  senderEmail: string;
+  replyToEmail: string;
+  reminderCadenceDays: number[];
+  planSlug: "solo" | "pro";
+}

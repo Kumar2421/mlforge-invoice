@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { CheckCircle2, Loader2, RefreshCw } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { CheckCircle2, Loader2, RefreshCw, Save } from "lucide-react";
 import { fetchAPI } from "@/utils/api";
+
+type SettingsData = {
+  senderName: string;
+  senderEmail: string;
+  replyToEmail: string;
+  reminderCadenceDays: number[];
+  planSlug: "solo" | "pro";
+};
 
 export default function SettingsView() {
   const [stripeStatus, setStripeStatus] = useState<{
@@ -11,15 +19,24 @@ export default function SettingsView() {
     connectedAt?: string;
     lastSyncedAt?: string;
   }>({ connected: false });
+  const [settings, setSettings] = useState<SettingsData>({
+    senderName: "",
+    senderEmail: "",
+    replyToEmail: "",
+    reminderCadenceDays: [3, 7, 14],
+    planSlug: "solo",
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const fetchStripeStatus = () => {
     setIsLoading(true);
-    fetchAPI("/api/v1/stripe/status")
-      .then((res) => {
-        setStripeStatus(res);
+    Promise.all([fetchAPI("/api/v1/stripe/status"), fetchAPI("/api/v1/settings")])
+      .then(([stripeRes, settingsRes]) => {
+        setStripeStatus(stripeRes);
+        setSettings(settingsRes.data);
       })
       .catch((err) => console.error("Failed to load Stripe status", err))
       .finally(() => setIsLoading(false));
@@ -68,6 +85,21 @@ export default function SettingsView() {
       console.error("Failed to sync Stripe data", err);
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetchAPI("/api/v1/settings", {
+        method: "PATCH",
+        body: JSON.stringify(settings),
+      });
+      setSettings(res.data);
+    } catch (err) {
+      console.error("Failed to save settings", err);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -165,16 +197,42 @@ export default function SettingsView() {
         <div className="bg-white border border-[#ECECEC] rounded-2xl p-5">
           <h3 className="text-[13px] font-bold text-gray-900 mb-4">Default Reminder Cadence</h3>
           <div className="grid grid-cols-3 gap-3">
-            {[
-              { day: 3, tone: "Gentle", color: "border-amber-200 text-amber-700 bg-amber-50" },
-              { day: 7, tone: "Firm", color: "border-orange-200 text-orange-700 bg-orange-50" },
-              { day: 14, tone: "Final", color: "border-red-200 text-red-700 bg-red-50" },
-            ].map((s) => (
-              <div key={s.day} className="border border-gray-200 rounded-xl p-3">
-                <p className="text-[11px] font-bold text-gray-900 mb-2">Day {s.day}</p>
-                <span className={`text-[9px] font-bold px-2.5 py-1 rounded-full border ${s.color}`}>{s.tone}</span>
-              </div>
-            ))}
+            {settings.reminderCadenceDays.map((day, index) => {
+              const toneMeta =
+                index === 0
+                  ? { tone: "Gentle", color: "border-amber-200 text-amber-700 bg-amber-50" }
+                  : index === 1
+                  ? { tone: "Firm", color: "border-orange-200 text-orange-700 bg-orange-50" }
+                  : { tone: "Final", color: "border-red-200 text-red-700 bg-red-50" };
+
+              return (
+                <label key={index} className="border border-gray-200 rounded-xl p-3 block">
+                  <p className="text-[11px] font-bold text-gray-900 mb-2">Reminder {index + 1}</p>
+                  <input
+                    type="number"
+                    min={1}
+                    value={day}
+                    onChange={(event) => {
+                      const nextDays = [...settings.reminderCadenceDays];
+                      nextDays[index] = Number(event.target.value);
+                      setSettings({ ...settings, reminderCadenceDays: nextDays });
+                    }}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-[12px] font-medium text-gray-900 focus:outline-none focus:border-[#074E5B]"
+                  />
+                  <span className={`mt-2 inline-flex text-[9px] font-bold px-2.5 py-1 rounded-full border ${toneMeta.color}`}>{toneMeta.tone}</span>
+                </label>
+              );
+            })}
+          </div>
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={handleSaveSettings}
+              disabled={isSaving}
+              className="flex items-center gap-1.5 rounded-full bg-[#074E5B] px-3.5 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-[#053E48] disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              Save cadence
+            </button>
           </div>
         </div>
 
@@ -184,16 +242,41 @@ export default function SettingsView() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-[10px] font-semibold text-gray-500 mb-1.5">From Name</label>
-              <input type="text" defaultValue="Jamil Suta" className="w-full border border-gray-200 rounded-lg py-2 px-3 text-[12px] text-gray-900 font-medium focus:outline-none focus:border-[#074E5B]" />
+              <input
+                type="text"
+                value={settings.senderName}
+                onChange={(event) => setSettings({ ...settings, senderName: event.target.value })}
+                className="w-full border border-gray-200 rounded-lg py-2 px-3 text-[12px] text-gray-900 font-medium focus:outline-none focus:border-[#074E5B]"
+              />
             </div>
             <div>
               <label className="block text-[10px] font-semibold text-gray-500 mb-1.5">From Email</label>
-              <input type="text" defaultValue="billing@mlforge.com" className="w-full border border-gray-200 rounded-lg py-2 px-3 text-[12px] text-gray-900 font-medium focus:outline-none focus:border-[#074E5B]" />
+              <input
+                type="text"
+                value={settings.senderEmail}
+                onChange={(event) => setSettings({ ...settings, senderEmail: event.target.value })}
+                className="w-full border border-gray-200 rounded-lg py-2 px-3 text-[12px] text-gray-900 font-medium focus:outline-none focus:border-[#074E5B]"
+              />
             </div>
             <div className="col-span-2">
               <label className="block text-[10px] font-semibold text-gray-500 mb-1.5">Reply-To</label>
-              <input type="text" defaultValue="jamil@mlforge.com" className="w-full border border-gray-200 rounded-lg py-2 px-3 text-[12px] text-gray-900 font-medium focus:outline-none focus:border-[#074E5B]" />
+              <input
+                type="text"
+                value={settings.replyToEmail}
+                onChange={(event) => setSettings({ ...settings, replyToEmail: event.target.value })}
+                className="w-full border border-gray-200 rounded-lg py-2 px-3 text-[12px] text-gray-900 font-medium focus:outline-none focus:border-[#074E5B]"
+              />
             </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <button
+              onClick={handleSaveSettings}
+              disabled={isSaving}
+              className="flex items-center gap-1.5 rounded-full bg-[#22C55E] px-3.5 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-[#16A34A] disabled:opacity-50"
+            >
+              {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              Save sender
+            </button>
           </div>
         </div>
 
@@ -203,7 +286,7 @@ export default function SettingsView() {
           <div className="grid grid-cols-2 gap-3">
             <div className="border-2 border-[#074E5B] rounded-xl p-4 relative">
               <span className="absolute top-3 right-3 text-[9px] font-bold text-[#074E5B] bg-[#074E5B]/5 border border-[#074E5B]/20 px-2 py-0.5 rounded-full">Current Plan</span>
-              <p className="text-[12px] font-bold text-gray-900">Solo</p>
+              <p className="text-[12px] font-bold text-gray-900">{settings.planSlug === "pro" ? "Pro" : "Solo"}</p>
               <p className="text-[20px] font-black text-gray-900 mt-1">$9<span className="text-[11px] text-gray-400 font-bold">/mo</span></p>
               <p className="text-[10px] text-gray-500 font-medium mt-2">1 Stripe account, unlimited reminders, default cadence.</p>
             </div>

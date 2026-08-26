@@ -94,6 +94,19 @@ export async function POST() {
     await supabase.from("payments").upsert(paymentsData);
   }
 
+  const paidInvoiceIds = invoicesData
+    .filter((invoice) => invoice.status === "Paid")
+    .map((invoice) => invoice.id);
+
+  if (paidInvoiceIds.length > 0) {
+    await supabase
+      .from("reminder_sequences")
+      .update({ status: "completed" })
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .in("invoice_id", paidInvoiceIds);
+  }
+
   await supabase
     .from("stripe_connections")
     .update({ last_synced_at: new Date().toISOString() })

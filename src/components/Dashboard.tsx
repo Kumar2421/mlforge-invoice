@@ -38,7 +38,11 @@ import SettingsView from "./SettingsView";
 import { fetchAPI } from "@/utils/api";
 import type { Invoice, Payment } from "@/types";
 
-export default function Dashboard() {
+type DashboardProps = {
+  displayName: string;
+};
+
+export default function Dashboard({ displayName }: DashboardProps) {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -271,7 +275,7 @@ export default function Dashboard() {
             {/* Greeting + Actions */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-[18px] font-black text-gray-900 tracking-tight">Hi, Jamil Suta 👋</h2>
+                <h2 className="text-[18px] font-black text-gray-900 tracking-tight">Hi, {displayName}</h2>
                 <p className="text-[11px] text-gray-400 font-medium mt-0.5">Here&apos;s a quick look at your invoices performance.</p>
               </div>
               <button
@@ -672,6 +676,5 @@ export default function Dashboard() {
     </div>
   );
 }
-
 
 
