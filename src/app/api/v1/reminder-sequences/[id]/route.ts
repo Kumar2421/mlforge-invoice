@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getCurrentWorkspace } from "@/lib/workspace";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -22,7 +20,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     .from("reminder_sequences")
     .update({ status })
     .eq("id", id)
-    .eq("user_id", user.id)
+    .eq("organization_id", workspace.organizationId)
     .select();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

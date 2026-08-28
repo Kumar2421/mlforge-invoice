@@ -37,6 +37,18 @@ export default function PaymentsView() {
       .finally(() => setIsLoading(false));
   }, []);
 
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const receivedThisMonth = payments
+    .filter(p => p.status === "Succeeded" && new Date(p.date).getMonth() === currentMonth && new Date(p.date).getFullYear() === currentYear)
+    .reduce((sum, p) => sum + (p.amount || 0), 0);
+
+  const pendingPayments = payments.filter(p => p.status === "Pending");
+  const pendingTotal = pendingPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const pendingCount = pendingPayments.length;
+
   return (
     <div className="flex-1 overflow-y-auto no-scrollbar px-6 pt-5 pb-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -62,7 +74,7 @@ export default function PaymentsView() {
           </div>
           <p className="text-[9px] text-gray-400 font-bold mt-3 uppercase tracking-wider">Received This Month</p>
           <p className="text-[18px] font-black text-gray-900 tracking-tight leading-none mt-0.5">
-            $6,340<span className="text-[12px] text-gray-300 font-bold">.00</span>
+            ${receivedThisMonth.toLocaleString()}<span className="text-[12px] text-gray-300 font-bold">.00</span>
           </p>
           <p className="text-[9px] text-gray-400 font-medium mt-1.5"><span className="text-green-600 font-bold">+12.4%</span> than last month</p>
         </div>
@@ -72,9 +84,9 @@ export default function PaymentsView() {
           </div>
           <p className="text-[9px] text-gray-400 font-bold mt-3 uppercase tracking-wider">Pending</p>
           <p className="text-[18px] font-black text-gray-900 tracking-tight leading-none mt-0.5">
-            $3,850<span className="text-[12px] text-gray-300 font-bold">.00</span>
+            ${pendingTotal.toLocaleString()}<span className="text-[12px] text-gray-300 font-bold">.00</span>
           </p>
-          <p className="text-[9px] text-gray-400 font-medium mt-1.5">1 invoice awaiting payment</p>
+          <p className="text-[9px] text-gray-400 font-medium mt-1.5">{pendingCount} {pendingCount === 1 ? 'payment' : 'payments'} awaiting completion</p>
         </div>
         <div className="bg-white border border-[#ECECEC] rounded-2xl p-4">
           <div className="w-8 h-8 rounded-lg border border-[#E5E7EB] flex items-center justify-center text-gray-400">

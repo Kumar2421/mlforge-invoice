@@ -91,10 +91,10 @@ export function Footer() {
 
             <div className="flex items-center justify-between gap-6 border-t border-[#333333] pt-6">
               <div className="flex gap-6">
-                <a href="#" className="text-base text-[#b8d4a8]">
+                <a href="/privacy" className="text-base text-[#b8d4a8]">
                   Privacy
                 </a>
-                <a href="#" className="text-base text-[#b8d4a8]">
+                <a href="/terms" className="text-base text-[#b8d4a8]">
                   Terms
                 </a>
               </div>

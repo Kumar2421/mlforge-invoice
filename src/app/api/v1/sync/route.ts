@@ -1,21 +1,19 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/utils/supabase/server";
+import { getCurrentWorkspace } from "@/lib/workspace";
 
 export async function POST() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { data: connection } = await supabase
     .from("stripe_connections")
     .select("restricted_key")
-    .eq("user_id", user.id)
+    .eq("organization_id", workspace.organizationId)
     .single();
 
   if (!connection?.restricted_key) {
@@ -28,7 +26,8 @@ export async function POST() {
   const stripeCustomers = await stripe.customers.list({ limit: 100 });
   const clientsData = stripeCustomers.data.map((cus) => ({
     id: cus.id,
-    user_id: user.id,
+    user_id: workspace.userId,
+    organization_id: workspace.organizationId,
     name: cus.name || cus.email?.split("@")[0] || "Unknown",
     company: cus.description || "",
     email: cus.email || "",
@@ -56,7 +55,8 @@ export async function POST() {
 
     return {
       id: inv.id,
-      user_id: user.id,
+      user_id: workspace.userId,
+      organization_id: workspace.organizationId,
       date: new Date(inv.created * 1000).toISOString(),
       due_date: inv.due_date ? new Date(inv.due_date * 1000).toISOString() : null,
       client_id: typeof inv.customer === "string" ? inv.customer : inv.customer && "id" in inv.customer ? inv.customer.id : null,
@@ -81,7 +81,8 @@ export async function POST() {
 
     return {
       id: charge.id,
-      user_id: user.id,
+      user_id: workspace.userId,
+      organization_id: workspace.organizationId,
       date: new Date(charge.created * 1000).toISOString(),
       invoice_id: typeof invoiceRef === "string" ? invoiceRef : invoiceRef?.id ?? null,
       amount: charge.amount / 100,
@@ -102,7 +103,7 @@ export async function POST() {
     await supabase
       .from("reminder_sequences")
       .update({ status: "completed" })
-      .eq("user_id", user.id)
+      .eq("organization_id", workspace.organizationId)
       .eq("status", "active")
       .in("invoice_id", paidInvoiceIds);
   }
@@ -110,7 +111,7 @@ export async function POST() {
   await supabase
     .from("stripe_connections")
     .update({ last_synced_at: new Date().toISOString() })
-    .eq("user_id", user.id);
+    .eq("organization_id", workspace.organizationId);
 
   return NextResponse.json({
     status: "success",

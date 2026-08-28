@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getCurrentWorkspace } from "@/lib/workspace";
 
 interface StageRow {
   id: string;
@@ -11,11 +12,8 @@ interface StageRow {
 
 export async function GET() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -29,7 +27,7 @@ export async function GET() {
       reminder_stages ( id, day, status, scheduled_for, executed_at )
     `
     )
-    .eq("user_id", user.id)
+    .eq("organization_id", workspace.organizationId)
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -65,11 +63,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -78,10 +73,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
+  const [invoiceResult, clientResult] = await Promise.all([
+    supabase.from("invoices").select("id").eq("id", invoiceId).eq("organization_id", workspace.organizationId).maybeSingle(),
+    supabase.from("clients").select("id").eq("id", clientId).eq("organization_id", workspace.organizationId).maybeSingle(),
+  ]);
+  if (!invoiceResult.data || !clientResult.data) return NextResponse.json({ error: "Invoice and client must belong to this workspace" }, { status: 400 });
+
   const { data: seq, error: seqErr } = await supabase
     .from("reminder_sequences")
     .insert({
-      user_id: user.id,
+      user_id: workspace.userId,
+      organization_id: workspace.organizationId,
       invoice_id: invoiceId,
       client_id: clientId,
       status: "active",
@@ -100,6 +102,7 @@ export async function POST(request: NextRequest) {
 
     return {
       sequence_id: seq.id,
+      organization_id: workspace.organizationId,
       day: stage.day,
       status: "pending",
       scheduled_for: scheduledFor.toISOString(),

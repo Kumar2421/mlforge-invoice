@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, ChevronDown, ChevronLeft, ChevronRight, CheckCircle2, MoreVertical, X, Loader2, Plus } from "lucide-react";
+import { Search, ChevronDown, ChevronLeft, ChevronRight, CheckCircle2, MoreVertical, X, Loader2 } from "lucide-react";
 import ReminderTimeline from "./ReminderTimeline";
 import type { ReminderStage, Invoice } from "@/types";
 import { fetchAPI } from "@/utils/api";
@@ -21,7 +21,6 @@ export default function InvoicesView({ onNewSequence }: InvoicesViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [activeInvoiceId, setActiveInvoiceId] = useState<string | null>(null);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
-  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
 
   useEffect(() => {
     fetchAPI('/api/v1/invoices')
@@ -54,44 +53,6 @@ export default function InvoicesView({ onNewSequence }: InvoicesViewProps) {
     }
   };
 
-  const handleCreateManualInvoice = async () => {
-    const clientName = window.prompt("Client name");
-    if (!clientName) return;
-
-    const clientEmail = window.prompt("Client email", "");
-    if (clientEmail === null) return;
-
-    const amountInput = window.prompt("Invoice amount", "2500");
-    if (!amountInput) return;
-
-    const dueDate = window.prompt("Due date (YYYY-MM-DD)", new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10));
-    if (!dueDate) return;
-
-    const amount = Number(amountInput);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      window.alert("Enter valid amount.");
-      return;
-    }
-
-    setIsCreatingInvoice(true);
-    try {
-      const res = await fetchAPI("/api/v1/invoices", {
-        method: "POST",
-        body: JSON.stringify({ clientName, clientEmail, amount, dueDate }),
-      });
-
-      const refreshed = await fetchAPI("/api/v1/invoices");
-      setInvoices(refreshed.data || []);
-      if (res.data?.id) {
-        setActiveInvoiceId(res.data.id);
-      }
-    } catch (err) {
-      console.error("Failed to create invoice", err);
-    } finally {
-      setIsCreatingInvoice(false);
-    }
-  };
-
   return (
     <div className="flex flex-1 min-h-0 w-full bg-white text-[#111827]">
       {/* ===== LEFT COLUMN: Invoice List ===== */}
@@ -102,23 +63,13 @@ export default function InvoicesView({ onNewSequence }: InvoicesViewProps) {
             <h2 className="text-[22px] font-bold text-gray-900 tracking-tight leading-none mb-1.5">My Invoices</h2>
             <p className="text-[12px] text-gray-500 font-medium">Manage and track all your invoices.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleCreateManualInvoice}
-              disabled={isCreatingInvoice}
-              className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold text-gray-900 bg-white border border-gray-200 hover:bg-gray-50 rounded-full transition-colors disabled:opacity-50"
-            >
-              {isCreatingInvoice ? "Creating..." : "Add Manual Invoice"}
-              <Plus className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={onNewSequence}
-              className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold text-white bg-[#22C55E] hover:bg-[#16A34A] rounded-full transition-colors"
-            >
-              New Reminder Sequence
-              <span className="text-[16px] leading-none mb-0.5 font-normal">+</span>
-            </button>
-          </div>
+          <button
+            onClick={onNewSequence}
+            className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold text-white bg-[#22C55E] hover:bg-[#16A34A] rounded-full transition-colors"
+          >
+            New Reminder Sequence
+            <span className="text-[16px] leading-none mb-0.5 font-normal">+</span>
+          </button>
         </div>
 
         {/* Filters & Search */}

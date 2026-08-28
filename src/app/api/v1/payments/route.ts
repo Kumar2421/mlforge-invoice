@@ -1,20 +1,18 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getCurrentWorkspace } from "@/lib/workspace";
 
 export async function GET() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { data, error } = await supabase
     .from("payments")
     .select("*, invoices(client_id), clients!inner(name)")
-    .eq("user_id", user.id)
+    .eq("organization_id", workspace.organizationId)
     .order("date", { ascending: false })
     .limit(50);
 

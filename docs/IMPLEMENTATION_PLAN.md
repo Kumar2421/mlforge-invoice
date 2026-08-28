@@ -12,6 +12,59 @@ Positioning line: **"Get Paid Faster."** Audience-neutral on purpose.
 
 ## Current state
 
+### Implementation update — 2026-08-28
+
+- **Completed after this roadmap was written:** real Stripe OAuth token exchange, Stripe webhook payment ingestion, payment-driven reminder completion, protected dashboard access, persisted sender/cadence settings, live reports, and the manual paid override.
+- **Completed platform work:** internal `/admin` UI, platform roles/audit schema, real admin overview/accounts/operational reads, customer team workspace/invitation foundations, support inbox, account suspension, platform settings, and live risk & audit.
+- **Active work:** organization IDs and RLS have been prepared and the primary customer read routes are organization-scoped. Stripe callback, sync, webhook, and the paid-override path still require the same organization-scope conversion before Phase 6 is complete.
+- **Do not re-implement:** the Phase 1–4 gaps listed below are retained for history; verify the current route before treating them as open work.
+
+### P0: Launch Blockers (To Do)
+
+#### [MODIFY] src/app/onboarding/layout.tsx (or page.tsx)
+- Add proper authentication guards.
+- Implement server-side redirect to `/login` if no active session exists.
+- Prevent authenticated users who have *already* completed onboarding from accessing the page again (redirect to `/dashboard`).
+
+#### [MODIFY] src/app/api/v1/cron/reminders/route.ts
+- Add idempotency checks (e.g., store a `sent_reminders` log or update a `last_sent_at` column) to prevent double-sending if Vercel retries the webhook.
+- Update the email template to include the physical address and unsubscribe link required for CAN-SPAM/GDPR compliance.
+
+#### [MODIFY] supabase/migrations/0003_account_settings_and_reports.sql (or create a new migration)
+- Enforce strict Row Level Security (RLS) on `account_settings` ensuring users can only modify settings for their own `organization_id`.
+
+#### [NEW] src/middleware.ts
+- Implement rate limiting for `/api/v1/*` routes using `@upstash/ratelimit` or a simple IP/session-based in-memory store if Redis is unavailable, to protect against abuse.
+
+### P1: Security & Compliance (To Do)
+
+#### [MODIFY] supabase/migrations/0010_support_tickets.sql
+- Update RLS policies to enforce tenant isolation. Ensure members can only view/create tickets for their own `organization_id`.
+
+## Verification Plan
+
+### Automated Tests
+- N/A
+
+### Manual Verification
+- **Supabase**: Verify `contact_messages` table exists after manual migration.
+- **Onboarding**: Access `/onboarding` anonymously (expect redirect to `/login`). Access `/onboarding` as a user who already completed it (expect redirect to `/dashboard`).
+- **Reminders**: Trigger the cron route manually and verify that (1) the email contains CAN-SPAM footers and (2) hitting the route again immediately does not send duplicate emails.
+
+### Phase completion ledger
+
+| Phase | Status | Completion evidence |
+| --- | --- | --- |
+| 0 — Foundations | Complete | Supabase, auth, base schema, and health endpoint are in place. |
+| 1 — Stripe read-only connect | Complete | Real OAuth token exchange, connection status, disconnect, and sync routes exist. |
+| 2 — Data sync | Complete | Sync and Stripe webhook ingestion keep invoice/payment data current. |
+| 3 — Reminder engine | Complete | Payment auto-pause, sender identity, successful/failed delivery state, and reminder activity are implemented. |
+| 4 — Frontend completeness | Complete | Reports/settings are live and first-run Stripe onboarding is implemented. |
+| 5 — Broaden beyond Stripe-only | Not started | Manual invoice creation remains intentionally excluded; only paid override exists. |
+| 6 — Team & multi-user | In progress | Team, invitations, organization schema, and primary shared reads exist; remaining write/sync routes need organization scope. |
+
+The completion ledger is the authoritative move-to-next-phase gate. Update it only after implementation and validation pass.
+
 - **Frontend**: Next.js 16 App Router. Dashboard, Invoices, Clients, Payments, Reports, Reminders, Settings, and a "New Reminder Sequence" builder — all built, all wired to real data via `fetchAPI` (only Reports is still mocked, see Phase 4).
 - **Auth**: Supabase Auth, cookie-based sessions, `middleware.ts` gates `/dashboard`.
 - **Backend**: folded directly into this repo as Next.js App Router route handlers under `src/app/api/v1/**` — no separate service. Previously ran as a Cloudflare Worker (Hono + Wrangler); that's been removed. One deploy target, one codebase, simpler to reason about at this stage.

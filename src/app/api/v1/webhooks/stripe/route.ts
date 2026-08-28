@@ -28,6 +28,7 @@ function toInvoiceId(value: string | { id: string } | null | undefined) {
 async function completeReminderSequence(
   supabaseAdmin: ReturnType<typeof createAdminClient>,
   userId: string,
+  organizationId: string,
   invoiceId: string,
   clientId: string | null,
   eventType: string
@@ -36,6 +37,7 @@ async function completeReminderSequence(
     .from("reminder_sequences")
     .select("id")
     .eq("user_id", userId)
+    .eq("organization_id", organizationId)
     .eq("invoice_id", invoiceId)
     .eq("status", "active");
 
@@ -60,6 +62,7 @@ async function completeReminderSequence(
   await supabaseAdmin.from("reminder_activity_log").insert(
     sequenceIds.map((sequenceId) => ({
       user_id: userId,
+      organization_id: organizationId,
       invoice_id: invoiceId,
       client_id: clientId,
       event_type: "sequence_completed",
@@ -75,6 +78,7 @@ async function completeReminderSequence(
 async function upsertPaidInvoice(
   supabaseAdmin: ReturnType<typeof createAdminClient>,
   userId: string,
+  organizationId: string,
   clientId: string | null,
   invoiceId: string,
   amountInCents: number,
@@ -84,6 +88,7 @@ async function upsertPaidInvoice(
     {
       id: invoiceId,
       user_id: userId,
+      organization_id: organizationId,
       client_id: clientId,
       date: createdAt,
       due_date: null,
@@ -97,6 +102,7 @@ async function upsertPaidInvoice(
 async function upsertStripePayment(
   supabaseAdmin: ReturnType<typeof createAdminClient>,
   userId: string,
+  organizationId: string,
   invoiceId: string,
   paymentId: string,
   amountInCents: number,
@@ -106,6 +112,7 @@ async function upsertStripePayment(
     {
       id: paymentId,
       user_id: userId,
+      organization_id: organizationId,
       invoice_id: invoiceId,
       date: createdAt,
       amount: amountInCents / 100,
@@ -122,7 +129,7 @@ async function resolveOwner(
 ) {
   const { data: invoiceRow } = await supabaseAdmin
     .from("invoices")
-    .select("user_id, client_id")
+    .select("user_id, organization_id, client_id")
     .eq("id", invoiceId)
     .maybeSingle();
 
@@ -132,7 +139,7 @@ async function resolveOwner(
 
   const { data: sequenceRow } = await supabaseAdmin
     .from("reminder_sequences")
-    .select("user_id, client_id")
+    .select("user_id, organization_id, client_id")
     .eq("invoice_id", invoiceId)
     .maybeSingle();
 
@@ -176,12 +183,13 @@ export async function POST(request: NextRequest) {
       const amountInCents = invoice.amount_paid ?? invoice.amount ?? 0;
       const paymentId = invoice.charge || invoice.payment_intent || invoice.id;
 
-      await upsertPaidInvoice(supabaseAdmin, owner.user_id, owner.client_id ?? null, invoiceId, amountInCents, createdAt);
+      await upsertPaidInvoice(supabaseAdmin, owner.user_id, owner.organization_id, owner.client_id ?? null, invoiceId, amountInCents, createdAt);
 
       if (paymentId) {
         await upsertStripePayment(
           supabaseAdmin,
           owner.user_id,
+          owner.organization_id,
           invoiceId,
           paymentId,
           amountInCents,
@@ -192,6 +200,7 @@ export async function POST(request: NextRequest) {
       await completeReminderSequence(
         supabaseAdmin,
         owner.user_id,
+        owner.organization_id,
         invoiceId,
         owner.client_id ?? null,
         event.type
@@ -212,6 +221,7 @@ export async function POST(request: NextRequest) {
         await upsertPaidInvoice(
           supabaseAdmin,
           owner.user_id,
+          owner.organization_id,
           owner.client_id ?? null,
           invoiceId,
           charge.amount,
@@ -220,6 +230,7 @@ export async function POST(request: NextRequest) {
         await upsertStripePayment(
           supabaseAdmin,
           owner.user_id,
+          owner.organization_id,
           invoiceId,
           charge.id,
           charge.amount,
@@ -228,6 +239,7 @@ export async function POST(request: NextRequest) {
         await completeReminderSequence(
           supabaseAdmin,
           owner.user_id,
+          owner.organization_id,
           invoiceId,
           owner.client_id ?? null,
           event.type

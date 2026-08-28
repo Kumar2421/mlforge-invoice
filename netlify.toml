@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Scheduled Function for running reminders (Idempotency ensures we don't double-send)
+[functions."cron-reminders"]
+  schedule = "@hourly" # Runs at the top of every hour

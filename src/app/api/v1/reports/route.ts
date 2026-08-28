@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getCurrentWorkspace } from "@/lib/workspace";
 
 type InvoiceRow = {
   id: string;
@@ -35,18 +36,15 @@ function startOfMonth(date: Date) {
 
 export async function GET() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const [invoiceRes, paymentRes, activityRes] = await Promise.all([
-    supabase.from("invoices").select("id, date, amount, status, client_id, clients(name)").eq("user_id", user.id),
-    supabase.from("payments").select("id, date, amount, status, invoice_id, invoices(client_id)").eq("user_id", user.id),
-    supabase.from("reminder_activity_log").select("invoice_id, event_type, created_at").eq("user_id", user.id),
+    supabase.from("invoices").select("id, date, amount, status, client_id, clients(name)").eq("organization_id", workspace.organizationId),
+    supabase.from("payments").select("id, date, amount, status, invoice_id, invoices(client_id)").eq("organization_id", workspace.organizationId),
+    supabase.from("reminder_activity_log").select("invoice_id, event_type, created_at").eq("organization_id", workspace.organizationId),
   ]);
 
   if (invoiceRes.error) {

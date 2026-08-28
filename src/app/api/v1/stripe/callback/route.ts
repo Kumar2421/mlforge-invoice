@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
-  const state = request.nextUrl.searchParams.get("state"); // user id passed in /connect
+  const state = request.nextUrl.searchParams.get("state");
 
   if (!code || !state) {
     return NextResponse.json({ error: "Missing code or state" }, { status: 400 });
@@ -34,8 +34,17 @@ export async function GET(request: NextRequest) {
     }
 
     const supabaseAdmin = createAdminClient();
+    const { data: organization } = await supabaseAdmin
+      .from("organizations")
+      .select("created_by")
+      .eq("id", state)
+      .maybeSingle();
+    if (!organization) {
+      return NextResponse.json({ error: "Unknown workspace" }, { status: 400 });
+    }
     const { error } = await supabaseAdmin.from("stripe_connections").upsert({
-      user_id: state,
+      user_id: organization.created_by,
+      organization_id: state,
       stripe_account_id: connectedAccountId,
       restricted_key: accessToken,
       connected_at: new Date().toISOString(),

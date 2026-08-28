@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getCurrentWorkspace } from "@/lib/workspace";
 
 async function completeReminderSequence(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
+  organizationId: string,
   invoiceId: string,
   clientId: string | null,
   eventType: string
@@ -11,7 +12,7 @@ async function completeReminderSequence(
   const { data: sequences } = await supabase
     .from("reminder_sequences")
     .select("id")
-    .eq("user_id", userId)
+    .eq("organization_id", organizationId)
     .eq("invoice_id", invoiceId)
     .eq("status", "active");
 
@@ -35,7 +36,7 @@ async function completeReminderSequence(
 
   await supabase.from("reminder_activity_log").insert(
     sequenceIds.map((sequenceId) => ({
-      user_id: userId,
+      organization_id: organizationId,
       invoice_id: invoiceId,
       client_id: clientId,
       event_type: "sequence_completed",
@@ -53,11 +54,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -66,7 +64,7 @@ export async function PATCH(
     .from("invoices")
     .select("id, amount, client_id, status")
     .eq("id", id)
-    .eq("user_id", user.id)
+    .eq("organization_id", workspace.organizationId)
     .maybeSingle();
 
   if (fetchError) {
@@ -84,7 +82,7 @@ export async function PATCH(
     .from("invoices")
     .update({ status: "Paid" })
     .eq("id", id)
-    .eq("user_id", user.id);
+    .eq("organization_id", workspace.organizationId);
 
   if (invoiceError) {
     return NextResponse.json({ error: invoiceError.message }, { status: 500 });
@@ -93,7 +91,8 @@ export async function PATCH(
   const { error: paymentError } = await supabase.from("payments").upsert(
     {
       id: paymentId,
-      user_id: user.id,
+      user_id: workspace.userId,
+      organization_id: workspace.organizationId,
       invoice_id: invoice.id,
       date: now,
       amount: Number(invoice.amount || 0),
@@ -107,7 +106,7 @@ export async function PATCH(
     return NextResponse.json({ error: paymentError.message }, { status: 500 });
   }
 
-  await completeReminderSequence(supabase, user.id, invoice.id, invoice.client_id ?? null, "manual_paid");
+  await completeReminderSequence(supabase, workspace.organizationId, invoice.id, invoice.client_id ?? null, "manual_paid");
 
   return NextResponse.json({
     data: {

@@ -8,15 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MLForgeMark } from "@/components/icons";
 
 const termsText = (
   <>
     By creating an account, you agree to our{" "}
-    <a href="#" className="font-medium text-black/45 underline underline-offset-2 dark:text-white/45">
-      Terms and Services
+    <a href="/terms" className="font-medium text-black/45 underline underline-offset-2 dark:text-white/45">
+      Terms of Service
     </a>{" "}
     and{" "}
-    <a href="#" className="font-medium text-black/45 underline underline-offset-2 dark:text-white/45">
+    <a href="/privacy" className="font-medium text-black/45 underline underline-offset-2 dark:text-white/45">
       Privacy Policy
     </a>
   </>
@@ -80,7 +81,7 @@ export default function AuthSectionOne() {
   const oauthAvailable = false;
 
   const handleOAuth = async (provider: "google" | "apple") => {
-    if (!oauthAvailable) return;
+    setError(null);
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -96,15 +97,7 @@ export default function AuthSectionOne() {
         <div className="flex items-center justify-center overflow-hidden rounded-md border border-black/20 bg-white px-6 sm:px-10 dark:border-white/10 dark:bg-[#0a0a0a] lg:px-14 xl:px-16">
           <div className="w-full max-w-[420px]">
             <div className="mb-2 flex items-center gap-2">
-              <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-                <circle cx="14" cy="14" r="14" fill="#22C55E" />
-                <path
-                  d="M9 18C9 14 12 10 18 9C17 13 15 16 11 18C10.5 18.3 9.5 18.3 9 18Z"
-                  fill="white"
-                  stroke="white"
-                  strokeWidth="0.5"
-                />
-              </svg>
+              <MLForgeMark className="w-[24px] h-[24px]" />
               <span className="text-sm font-bold tracking-tight">Payment Reminders</span>
             </div>
 
@@ -112,15 +105,13 @@ export default function AuthSectionOne() {
               {isSignUp ? "Create your account" : "Welcome back"}
             </h1>
             <p className="mt-1.5 text-sm leading-snug text-black/60 dark:text-white/55">
-              {isSignUp ? "Start automating payment reminders." : "Manage your invoices seamlessly."}
+              Payment Reminder — A sub-product of MLForge Studio.
             </p>
 
             <div className="mt-5 grid gap-2.5 sm:grid-cols-2">
               <Button
                 type="button"
                 variant="outline"
-                disabled={!oauthAvailable}
-                title={oauthAvailable ? undefined : "Coming soon"}
                 className="h-9 gap-2 text-sm"
                 onClick={() => handleOAuth("google")}
               >
@@ -130,8 +121,8 @@ export default function AuthSectionOne() {
               <Button
                 type="button"
                 variant="outline"
-                disabled={!oauthAvailable}
-                title={oauthAvailable ? undefined : "Coming soon"}
+                disabled
+                title="Coming soon"
                 className="h-9 gap-2 text-sm"
                 onClick={() => handleOAuth("apple")}
               >
@@ -139,11 +130,6 @@ export default function AuthSectionOne() {
                 Apple
               </Button>
             </div>
-            {!oauthAvailable && (
-              <p className="mt-1.5 text-xs text-black/35 dark:text-white/35">
-                Google and Apple sign-in are coming soon &mdash; use email for now.
-              </p>
-            )}
 
             <div className="my-4 flex items-center gap-3 text-xs text-black/40 dark:text-white/40">
               <div className="h-px flex-1 bg-black/10 dark:bg-white/10" />

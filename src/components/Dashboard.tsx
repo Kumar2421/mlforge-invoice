@@ -35,14 +35,20 @@ import PaymentsView from "./PaymentsView";
 import ReportsView from "./ReportsView";
 import RemindersView from "./RemindersView";
 import SettingsView from "./SettingsView";
+import TeamView from "./TeamView";
+import OnboardingView from "./OnboardingView";
+import AdminDashboard from "./AdminDashboard";
+import { MLForgeMark } from "./icons";
+import { SupportWidget } from "./SupportWidget";
 import { fetchAPI } from "@/utils/api";
 import type { Invoice, Payment } from "@/types";
 
 type DashboardProps = {
   displayName: string;
+  needsOnboarding: boolean;
 };
 
-export default function Dashboard({ displayName }: DashboardProps) {
+export default function Dashboard({ displayName, needsOnboarding }: DashboardProps) {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -87,17 +93,8 @@ export default function Dashboard({ displayName }: DashboardProps) {
       <aside className="w-[240px] bg-white border-r border-[#F0F0F0] flex flex-col shrink-0">
         {/* Brand */}
         <div className="h-14 flex items-center gap-2.5 px-5 shrink-0">
-          {/* Leaf icon */}
           <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <circle cx="14" cy="14" r="14" fill="#22C55E" />
-              <path
-                d="M9 18C9 14 12 10 18 9C17 13 15 16 11 18C10.5 18.3 9.5 18.3 9 18Z"
-                fill="white"
-                stroke="white"
-                strokeWidth="0.5"
-              />
-            </svg>
+            <MLForgeMark className="h-7 w-7" />
           </div>
           <span className="text-[15px] font-extrabold text-gray-900 tracking-tight">Payment Reminders</span>
         </div>
@@ -117,6 +114,7 @@ export default function Dashboard({ displayName }: DashboardProps) {
               { name: "Payments", icon: CreditCard },
               { name: "Reports", icon: BarChart3 },
               { name: "Reminders", icon: BellRing },
+              { name: "Team", icon: Users },
             ].map((item) => {
               const Icon = item.icon;
               const active =
@@ -242,6 +240,7 @@ export default function Dashboard({ displayName }: DashboardProps) {
               : activeTab === "Reports" ? <BarChart3 className="w-3.5 h-3.5 text-gray-400" />
               : activeTab === "Reminders" || activeTab === "NewSequence" ? <BellRing className="w-3.5 h-3.5 text-gray-400" />
               : activeTab === "Settings" ? <Settings className="w-3.5 h-3.5 text-gray-400" />
+              : activeTab === "Team" ? <Users className="w-3.5 h-3.5 text-gray-400" />
               : <FileText className="w-3.5 h-3.5 text-gray-400" />}
             <span>{activeTab === "NewSequence" ? "Reminders" : activeTab}</span>
           </div>
@@ -256,7 +255,9 @@ export default function Dashboard({ displayName }: DashboardProps) {
           </div>
         </div>
 
-        {activeTab === "Invoices" ? (
+        {needsOnboarding && activeTab === "Dashboard" ? (
+          <OnboardingView onOpenSettings={() => setActiveTab("Settings")} />
+        ) : activeTab === "Invoices" ? (
           <InvoicesView onNewSequence={() => setActiveTab("NewSequence")} />
         ) : activeTab === "NewSequence" ? (
           <ReminderSequenceView onBack={() => setActiveTab("Reminders")} />
@@ -270,6 +271,8 @@ export default function Dashboard({ displayName }: DashboardProps) {
           <RemindersView onNewSequence={() => setActiveTab("NewSequence")} />
         ) : activeTab === "Settings" ? (
           <SettingsView />
+        ) : activeTab === "Team" ? (
+          <TeamView />
         ) : (
           <main className="flex-1 overflow-y-auto no-scrollbar px-6 pt-5 pb-6 space-y-4">
             {/* Greeting + Actions */}
@@ -670,11 +673,7 @@ export default function Dashboard({ displayName }: DashboardProps) {
       </div>
 
       {/* Chat widget floating button */}
-      <button className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-[#074E5B] text-white shadow-lg hover:bg-[#053E48] flex items-center justify-center transition-colors z-50">
-        <MessageCircle className="w-5 h-5" />
-      </button>
+      <SupportWidget />
     </div>
   );
 }
-
-

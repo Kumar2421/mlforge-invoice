@@ -4,13 +4,40 @@ import Link from "next/link"
 import { useState } from "react"
 import { AtSign, MessageCircle, Share2, Globe, ArrowRight } from "lucide-react"
 import { Footer } from "@/components/landing/Footer"
+import { createClient } from "@/utils/supabase/client"
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const supabase = createClient()
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setSubmitted(true)
+    setIsSubmitting(true)
+    
+    const formData = new FormData(e.currentTarget)
+    const name = formData.get("name") as string
+    const email = formData.get("email") as string
+    const message = formData.get("message") as string
+
+    try {
+      const res = await fetch("/api/v1/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message })
+      })
+
+      if (res.ok) {
+        setSubmitted(true)
+      } else {
+        throw new Error("Failed to send message")
+      }
+    } catch (error) {
+      console.error(error)
+      alert("Something went wrong. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -63,8 +90,8 @@ export default function ContactPage() {
             <div className="flex flex-col gap-8">
               <div>
                 <p className="text-sm text-[#585858]">Email:</p>
-                <a href="mailto:hello@paymentreminders.app" className="text-lg font-medium text-[#131313]">
-                  hello@paymentreminders.app
+                <a href="mailto:hello@mlforge.in" className="text-lg font-medium text-[#131313]">
+                  hello@mlforge.in
                 </a>
               </div>
 
@@ -73,7 +100,7 @@ export default function ContactPage() {
                 <p className="text-lg font-medium text-[#131313]">Mon&ndash;Fri, 9am&ndash;6pm</p>
               </div>
 
-              <div>
+              {/* <div>
                 <p className="text-sm text-[#585858]">Follow us:</p>
                 <div className="mt-3 flex gap-3">
                   {[AtSign, MessageCircle, Share2, Globe].map((Icon, i) => (
@@ -86,7 +113,7 @@ export default function ContactPage() {
                     </a>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -115,6 +142,7 @@ export default function ContactPage() {
                     </label>
                     <input
                       id="name"
+                      name="name"
                       type="text"
                       required
                       placeholder="Your full name"
@@ -128,6 +156,7 @@ export default function ContactPage() {
                     </label>
                     <input
                       id="email"
+                      name="email"
                       type="email"
                       required
                       placeholder="Your email address"
@@ -141,6 +170,7 @@ export default function ContactPage() {
                     </label>
                     <textarea
                       id="message"
+                      name="message"
                       required
                       rows={4}
                       placeholder="How can we help?"
@@ -150,9 +180,10 @@ export default function ContactPage() {
 
                   <button
                     type="submit"
-                    className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-[#131313] px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-95 hover:bg-[#2a2a2a]"
+                    disabled={isSubmitting}
+                    className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-[#131313] px-6 py-3 text-sm font-semibold text-white transition-all hover:scale-95 hover:bg-[#2a2a2a] disabled:opacity-50"
                   >
-                    SUBMIT
+                    {isSubmitting ? "SUBMITTING..." : "SUBMIT"}
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#d6fd70]">
                       <ArrowRight className="h-3 w-3 -rotate-45 text-[#131313]" strokeWidth={2.5} />
                     </div>

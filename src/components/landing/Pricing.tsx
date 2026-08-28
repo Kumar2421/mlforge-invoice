@@ -50,10 +50,10 @@ export function Pricing() {
             Other tools take a cut of what you collect. We charge a flat monthly fee &mdash; you keep everything you get paid.
           </p>
 
-          <button className="flex items-center gap-2 px-6 py-3 bg-[#131313] text-[#d6fd70] rounded-full hover:bg-black transition-colors font-mono uppercase text-sm font-medium tracking-wide">
+          <a href="/checkout" className="flex items-center gap-2 px-6 py-3 bg-[#131313] text-[#d6fd70] rounded-full hover:bg-black transition-colors font-mono uppercase text-sm font-medium tracking-wide">
             <span>GET STARTED</span>
             <ArrowUpRight className="w-4 h-4" />
-          </button>
+          </a>
         </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-[#f2f2f2] p-3 rounded-2xl max-w-3xl mx-auto">
@@ -112,14 +112,14 @@ export function Pricing() {
                 ))}
               </ul>
 
-              <button className={cn(
-                'w-full py-3 px-5 rounded-full font-mono uppercase text-sm font-medium tracking-wider transition-all',
+              <a href="/checkout" className={cn(
+                'w-full py-3 px-5 rounded-full font-mono uppercase text-sm font-medium tracking-wider transition-all block text-center',
                 card.featured
                   ? 'bg-[#131313] text-[#d6fd70] hover:bg-black'
                   : 'bg-[#131313] text-[#d6fd70] hover:bg-black'
               )}>
                 GET STARTED
-              </button>
+              </a>
             </Reveal>
           ))}
         </div>
