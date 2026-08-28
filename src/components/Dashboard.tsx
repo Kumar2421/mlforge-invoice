@@ -53,6 +53,16 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [theme, setTheme] = useState("light");
+  const [showAlerts, setShowAlerts] = useState(false);
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [theme]);
 
   useEffect(() => {
     Promise.all([
@@ -145,11 +155,11 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
             <span className="px-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Invoices</span>
             <ul className="mt-2 space-y-0.5">
               {[
-                { name: "Paid", count: 124, color: "bg-[#074E5B]" },
-                { name: "Pending", count: 25, color: "bg-[#F59E0B]" },
-                { name: "Overdue", count: 8, color: "bg-[#D1D5DB]" },
-                { name: "Cancelled", count: 3, color: "bg-[#EF4444]" },
-                { name: "Drafts", count: 2, color: "bg-[#374151]" },
+                { name: "Paid", count: paidInvoicesCount, color: "bg-[#074E5B]" },
+                { name: "Pending", count: invoices.filter(i => i.status === 'Pending').length, color: "bg-[#F59E0B]" },
+                { name: "Overdue", count: overdueCount, color: "bg-[#D1D5DB]" },
+                { name: "Cancelled", count: cancelledCount, color: "bg-[#EF4444]" },
+                { name: "Drafts", count: invoices.filter(i => !i.status || i.status === 'Draft').length, color: "bg-[#374151]" },
               ].map((s) => (
                 <li key={s.name}>
                   <button className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-[12px] font-medium text-gray-500 hover:bg-gray-50 transition-all">
@@ -222,8 +232,8 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
               Theme
             </span>
             <div className="flex items-center bg-[#F3F4F6] rounded-full p-0.5">
-              <span className="px-2 py-0.5 text-[9px] font-bold rounded-full bg-white text-gray-800 shadow-sm">Light</span>
-              <span className="px-2 py-0.5 text-[9px] font-bold rounded-full text-gray-400 cursor-pointer">Dark</span>
+              <button onClick={() => setTheme('light')} className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-all ${theme === 'light' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400'}`}>Light</button>
+              <button onClick={() => setTheme('dark')} className={`px-2 py-0.5 text-[9px] font-bold rounded-full transition-all ${theme === 'dark' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400'}`}>Dark</button>
             </div>
           </div>
         </div>
@@ -248,10 +258,24 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
             <button className="w-8 h-8 rounded-full border border-[#E5E7EB] flex items-center justify-center text-gray-500 hover:bg-gray-50">
               <Search className="w-4 h-4" />
             </button>
-            <button className="w-8 h-8 rounded-full border border-[#E5E7EB] flex items-center justify-center text-gray-500 hover:bg-gray-50 relative">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444] ring-2 ring-white" />
-            </button>
+            <div className="relative">
+              <button onClick={() => setShowAlerts(!showAlerts)} className="w-8 h-8 rounded-full border border-[#E5E7EB] flex items-center justify-center text-gray-500 hover:bg-gray-50 relative">
+                <Bell className="w-4 h-4" />
+                {overdueCount > 0 && <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#EF4444] ring-2 ring-white" />}
+              </button>
+              {showAlerts && (
+                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-3">
+                  <h4 className="text-[11px] font-bold text-gray-900 mb-2">Alerts</h4>
+                  {overdueCount > 0 ? (
+                    <div className="text-[10px] text-red-600 bg-red-50 p-2 rounded">
+                      You have {overdueCount} overdue invoice(s).
+                    </div>
+                  ) : (
+                    <div className="text-[10px] text-gray-500">No new alerts.</div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

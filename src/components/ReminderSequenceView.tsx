@@ -261,6 +261,13 @@ export default function ReminderSequenceView({ onBack }: ReminderSequenceViewPro
                       onChange={(e) => updateStage(i, { subject: e.target.value })}
                       className="w-full border border-gray-200 rounded-md py-1.5 px-2.5 text-[10px] text-gray-900 font-medium focus:outline-none focus:border-[#074E5B]"
                     />
+                    <textarea
+                      value={stage.body}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateStage(i, { body: e.target.value })}
+                      rows={3}
+                      className="w-full border border-gray-200 rounded-md py-1.5 px-2.5 mt-2 text-[10px] text-gray-900 font-medium focus:outline-none focus:border-[#074E5B] resize-none"
+                    />
                   </div>
                 ))}
               </div>

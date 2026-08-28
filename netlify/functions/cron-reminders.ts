@@ -1,7 +1,8 @@
+// @ts-ignore
 import { schedule } from "@netlify/functions";
 
 // Netlify Scheduled Function to trigger the cron/reminders route
-const handler = schedule("@hourly", async (event) => {
+const handler = schedule("@hourly", async (event: any) => {
   // Use the internal URL to trigger the next.js route
   const appUrl = process.env.URL || "http://localhost:3000";
   

@@ -63,11 +63,21 @@ export default function AuthSectionOne() {
         router.refresh();
       }
     } else {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError) {
         setError(authError.message);
       } else {
-        router.push("/dashboard");
+        let isAdmin = email.toLowerCase() === "senthil210520012421@gmail.com";
+        if (!isAdmin && data?.user) {
+          const { data: adminData } = await supabase.from('platform_admins').select('role').eq('user_id', data.user.id).maybeSingle();
+          if (adminData) isAdmin = true;
+        }
+        
+        if (isAdmin) {
+          router.push("/admin");
+        } else {
+          router.push("/dashboard");
+        }
         router.refresh();
       }
     }
