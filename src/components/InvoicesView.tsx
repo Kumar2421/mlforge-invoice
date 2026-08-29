@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, ChevronDown, ChevronLeft, ChevronRight, CheckCircle2, MoreVertical, X, Loader2 } from "lucide-react";
+import { Search, ChevronDown, ChevronLeft, ChevronRight, CheckCircle2, MoreVertical, X, Loader2, Plus } from "lucide-react";
 import ReminderTimeline from "./ReminderTimeline";
+import { CreateInvoiceModal } from "./CreateInvoiceModal";
 import type { ReminderStage, Invoice } from "@/types";
 import { fetchAPI } from "@/utils/api";
 
@@ -16,19 +17,30 @@ const previewReminderStages: ReminderStage[] = [
   { day: 7, tone: "firm", subject: "Escalation scheduled", body: "", status: "scheduled" },
 ];
 
+interface ClientData {
+  id: string;
+  name: string;
+  email?: string;
+}
+
 export default function InvoicesView({ onNewSequence }: InvoicesViewProps) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [clients, setClients] = useState<ClientData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeInvoiceId, setActiveInvoiceId] = useState<string | null>(null);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
 
   useEffect(() => {
-    fetchAPI('/api/v1/invoices')
-      .then(res => {
-        setInvoices(res.data || []);
-        if (res.data?.length > 0) setActiveInvoiceId(res.data[0].id);
+    Promise.all([
+      fetchAPI('/api/v1/invoices'),
+      fetchAPI('/api/v1/clients'),
+    ])
+      .then(([invRes, clientRes]) => {
+        setInvoices(invRes.data || []);
+        setClients(clientRes.data || []);
+        if (invRes.data?.length > 0) setActiveInvoiceId(invRes.data[0].id);
       })
-      .catch(err => console.error("Failed to fetch invoices", err))
+      .catch(err => console.error("Failed to fetch data", err))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -63,13 +75,22 @@ export default function InvoicesView({ onNewSequence }: InvoicesViewProps) {
             <h2 className="text-[22px] font-bold text-gray-900 tracking-tight leading-none mb-1.5">My Invoices</h2>
             <p className="text-[12px] text-gray-500 font-medium">Manage and track all your invoices.</p>
           </div>
-          <button
-            onClick={onNewSequence}
-            className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold text-white bg-[#22C55E] hover:bg-[#16A34A] rounded-full transition-colors"
-          >
-            New Reminder Sequence
-            <span className="text-[16px] leading-none mb-0.5 font-normal">+</span>
-          </button>
+          <div className="flex gap-2">
+            <CreateInvoiceModal
+              clients={clients}
+              onInvoiceCreated={() => {
+                fetchAPI('/api/v1/invoices')
+                  .then(res => setInvoices(res.data || []));
+              }}
+            />
+            <button
+              onClick={onNewSequence}
+              className="flex items-center gap-1.5 px-4 py-2 text-[12px] font-bold text-white bg-[#22C55E] hover:bg-[#16A34A] rounded-full transition-colors"
+            >
+              New Reminder Sequence
+              <span className="text-[16px] leading-none mb-0.5 font-normal">+</span>
+            </button>
+          </div>
         </div>
 
         {/* Filters & Search */}

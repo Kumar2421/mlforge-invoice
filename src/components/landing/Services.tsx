@@ -1,11 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal'
+import Link from 'next/link'
+import { Reveal } from '@/components/ui/Reveal'
 
 export function Services() {
   return (
-    <section id="features" className="w-full bg-white">
+    <section id="why" className="w-full bg-white">
       <div className="mx-auto px-12 py-24">
         <Reveal delay={0} className="flex flex-col items-center gap-8 text-center md:gap-12">
           <div className="flex items-center justify-center gap-3">
@@ -40,23 +41,9 @@ export function Services() {
             Agencies, contractors, consultants, landlords &mdash; not just freelancers. If you invoice and wait, this is for you.
           </p>
 
-          <button
-            className="group flex h-12 items-center justify-center gap-2 rounded-full px-6 font-mono text-sm font-medium uppercase tracking-wider"
-            style={{
-              backgroundColor: '#131313',
-              color: '#d6fd70',
-              transition: 'all 0.3s cubic-bezier(0.19,1,0.22,1)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#ffffff'
-              e.currentTarget.style.color = '#131313'
-              e.currentTarget.style.transform = 'scale(0.95)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#131313'
-              e.currentTarget.style.color = '#d6fd70'
-              e.currentTarget.style.transform = 'scale(1)'
-            }}
+          <Link
+            href="/login"
+            className="group flex h-12 items-center justify-center gap-2 rounded-full bg-[#131313] px-6 font-mono text-sm font-medium uppercase tracking-wider text-[#d6fd70] transition-transform duration-300 hover:scale-95 hover:bg-white hover:text-[#131313]"
           >
             GET STARTED
             <svg
@@ -72,7 +59,7 @@ export function Services() {
                 d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
               />
             </svg>
-          </button>
+          </Link>
         </Reveal>
 
         <div className="mt-16">
@@ -87,7 +74,7 @@ export function Services() {
               <ServiceCard
                 icon={
                   <Image
-                    src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/698e4863b7c4e4770533722e_mingcute_ai-fill.svg"
+                    src="/landing/698e4863b7c4e4770533722e_mingcute_ai-fill.svg"
                     alt="AI strategy"
                     width={24}
                     height={24}
@@ -96,7 +83,7 @@ export function Services() {
                 }
                 title="Read-only, always"
                 description="We never move money and never create invoices. Disconnect anytime, one click."
-                bgImage="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/696202d02a0dce5f45a031fb_service-img-2.webp"
+                bgImage="/landing/696202d02a0dce5f45a031fb_service-img-2.webp"
               />
             </Reveal>
 
@@ -104,7 +91,7 @@ export function Services() {
               <ServiceCard
                 icon={
                   <Image
-                    src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/698e4875214fe570673439cb_basil_chart-pie-solid.svg"
+                    src="/landing/698e4875214fe570673439cb_basil_chart-pie-solid.svg"
                     alt="Business consulting"
                     width={24}
                     height={24}
@@ -113,7 +100,7 @@ export function Services() {
                 }
                 title="Escalating, not spammy"
                 description="Gentle at Day 3, firmer at Day 7, final notice at Day 14 &mdash; tone that matches urgency."
-                bgImage="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6961fe8f17d6448d5348850c_service-img.webp"
+                bgImage="/landing/6961fe8f17d6448d5348850c_service-img.webp"
               />
             </Reveal>
 
@@ -121,7 +108,7 @@ export function Services() {
               <ServiceCard
                 icon={
                   <Image
-                    src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/698e487f52e4cd9da04322e0_ic_round-insert-chart.svg"
+                    src="/landing/698e487f52e4cd9da04322e0_ic_round-insert-chart.svg"
                     alt="Data & insights"
                     width={24}
                     height={24}
@@ -130,7 +117,7 @@ export function Services() {
                 }
                 title="Flat fee, no cut"
                 description="$9-15/month. Not a percentage of what you collect. Get paid more, keep more."
-                bgImage="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/696202de6ed108d94012bd8e_service-img-3.webp"
+                bgImage="/landing/696202de6ed108d94012bd8e_service-img-3.webp"
               />
             </Reveal>
           </div>
@@ -195,23 +182,6 @@ function ServiceCard({ icon, title, description, bgImage }: ServiceCardProps) {
             {description}
           </p>
           
-          {/* Subtle Action Button on Hover */}
-          <div className="mt-4 flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-[#d6fd70] opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-            EXPLORE SERVICE
-            <svg
-              className="h-3 w-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-              />
-            </svg>
-          </div>
         </div>
       </div>
     </div>

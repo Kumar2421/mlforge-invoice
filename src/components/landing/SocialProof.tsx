@@ -1,4 +1,4 @@
-import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal';
+import { Reveal } from '@/components/ui/Reveal';
 
 const stats = [
   { value: '84%', label: 'Average collection rate improvement in the first month' },

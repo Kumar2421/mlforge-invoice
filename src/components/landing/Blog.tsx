@@ -1,105 +1,90 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { Reveal } from "@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal";
+import { Reveal } from "@/components/ui/Reveal";
+
+const cards = [
+  {
+    slug: "/blog",
+    kicker: "Guide",
+    title: "How to ask a client for a late payment (without burning the relationship)",
+    summary:
+      "Templates for the gentle nudge, the firm follow-up, and the final notice — the same escalation the reminder engine automates.",
+  },
+  {
+    slug: "/compare/no-percentage-cut",
+    kicker: "Comparison",
+    title: "What a percentage cut actually costs you",
+    summary:
+      "On $10,000/month collected, a 2% tool costs $200. A flat fee costs $9. Here's the math across revenue levels.",
+  },
+  {
+    slug: "/blog",
+    kicker: "Explainer",
+    title: "What “read-only” means for your Stripe account",
+    summary:
+      "A restricted key that reads invoices and payments and nothing else. No charges, no refunds, no transfers — enforced by Stripe.",
+  },
+];
 
 export function Blog() {
-  const cards = [
-    {
-      id: "1",
-      title: "Why 71% of Freelancers Get Paid Late (And What Fixes It)",
-      image:
-        "/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6961c58c9c176be6aada8c2f_blog-img-1_1x.webp",
-    },
-    {
-      id: "2",
-      title: "What 'Read-Only' Actually Means for Your Stripe Account",
-      image:
-        "/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6961c6ca3c9b5f744a47a796_blog-img-2_1x.webp",
-    },
-    {
-      id: "3",
-      title: "Writing a Firm Payment Reminder Without Sounding Rude",
-      image:
-        "/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6961c70052120388fb4e8c2a_blog-img-3_1x.webp",
-    },
-  ];
-
   return (
     <section className="w-full bg-white font-sans">
       <div className="pt-[72px]" />
-
-      <div className="px-[52px]">
-        <div className="mx-auto max-w-[1280px] px-7">
-          <Reveal delay={0} className="mb-16 flex items-end justify-between gap-6">
+      <div className="px-6 md:px-[52px]">
+        <div className="mx-auto max-w-[1280px] md:px-7">
+          <Reveal delay={0} className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="flex-1">
               <div className="mb-4 flex items-center gap-3">
                 <div className="h-0.5 w-2 bg-black" />
                 <span className="font-mono text-sm font-medium uppercase tracking-[1.92px] text-black">
-                  Blog and Articles
+                  Reading
                 </span>
               </div>
-
-              <h2 className="mb-4 text-5xl font-medium leading-[57.6px] tracking-[-2.88px] text-black">
+              <h2 className="mb-4 text-4xl font-medium leading-tight tracking-[-1.5px] text-black md:text-5xl">
                 Getting paid, explained
               </h2>
-
-              <p className="text-base leading-[22.4px] tracking-[-0.32px] text-[#585858]">
-                Practical notes on late payments, reminder cadence, and running
-                a small business without chasing invoices by hand.
+              <p className="max-w-xl text-base leading-relaxed text-[#585858]">
+                Practical notes on late payments, reminder cadence, and running a small
+                business without chasing invoices by hand.
               </p>
             </div>
-
             <Link
-              href="#"
-              className="flex items-center gap-4 whitespace-nowrap rounded-full bg-[#131313] px-5 py-2 font-mono text-sm font-medium uppercase tracking-[1.92px] text-[#d6fd70] transition-opacity hover:opacity-90"
+              href="/blog"
+              className="flex w-fit items-center gap-3 whitespace-nowrap rounded-full bg-[#131313] px-5 py-2 font-mono text-sm font-medium uppercase tracking-[1.92px] text-[#d6fd70] transition-opacity hover:opacity-90"
             >
-              View All
+              View all
               <ArrowUpRight size={16} strokeWidth={2.5} />
             </Link>
           </Reveal>
 
-          <div className="mb-16" />
-
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {cards.map((card, index) => (
-              <Link
-                key={card.id}
-                href="#"
-                className="group block"
-              >
-                <Reveal delay={100 * (index + 1)}>
-                  <div className="relative overflow-hidden rounded-[24px]">
-                    <div className="relative w-full" style={{ aspectRatio: "1" }}>
-                      <Image
-                        src={card.image}
-                        alt={card.title}
-                        fill
-                        className="object-cover"
-                      />
-
-                      <div className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-black/70">
-                        <ArrowUpRight
-                          size={18}
-                          className="text-white"
-                          strokeWidth={2.5}
-                        />
-                      </div>
-
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/50 to-transparent px-6 py-6">
-                        <h3 className="text-lg font-medium leading-tight text-white">
-                          {card.title}
-                        </h3>
-                      </div>
-                    </div>
+              <Reveal key={card.title} delay={100 * (index + 1)}>
+                <Link
+                  href={card.slug}
+                  className="group flex h-full flex-col justify-between rounded-[24px] border border-[#E8E8E8] bg-[#FAFAFA] p-6 transition-colors hover:border-[#131313]"
+                >
+                  <div>
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-[#585858]">
+                      {card.kicker}
+                    </span>
+                    <h3 className="mt-3 text-lg font-semibold leading-snug text-[#131313]">{card.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-[#585858]">{card.summary}</p>
                   </div>
-                </Reveal>
-              </Link>
+                  <div className="mt-6 flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-widest text-[#131313]">
+                    Read
+                    <ArrowUpRight
+                      size={14}
+                      strokeWidth={2.5}
+                      className="transition-transform group-hover:translate-x-0.5"
+                    />
+                  </div>
+                </Link>
+              </Reveal>
             ))}
           </div>
         </div>
       </div>
-
       <div className="pt-[72px]" />
     </section>
   );

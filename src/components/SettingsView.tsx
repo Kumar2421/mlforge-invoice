@@ -30,6 +30,7 @@ export default function SettingsView() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isBilling, setIsBilling] = useState(false);
 
   const fetchStripeStatus = () => {
     setIsLoading(true);
@@ -282,19 +283,75 @@ export default function SettingsView() {
 
         {/* Plan & Billing */}
         <div className="bg-white border border-[#ECECEC] rounded-2xl p-5">
-          <h3 className="text-[13px] font-bold text-gray-900 mb-4">Plan &amp; Billing</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[13px] font-bold text-gray-900">Plan &amp; Billing</h3>
+            <button
+              onClick={async () => {
+                setIsBilling(true);
+                try {
+                  const res = await fetchAPI("/api/v1/billing/portal", { method: "POST" });
+                  if (res.url) window.location.href = res.url;
+                } catch (e) {
+                  console.error("Billing portal failed", e);
+                } finally {
+                  setIsBilling(false);
+                }
+              }}
+              disabled={isBilling}
+              className="text-[10px] font-bold text-[#074E5B] border border-[#074E5B]/30 rounded-full px-3 py-1 hover:bg-[#074E5B]/5 disabled:opacity-50"
+            >
+              Manage billing
+            </button>
+          </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="border-2 border-[#074E5B] rounded-xl p-4 relative">
-              <span className="absolute top-3 right-3 text-[9px] font-bold text-[#074E5B] bg-[#074E5B]/5 border border-[#074E5B]/20 px-2 py-0.5 rounded-full">Current Plan</span>
-              <p className="text-[12px] font-bold text-gray-900">{settings.planSlug === "pro" ? "Pro" : "Solo"}</p>
-              <p className="text-[20px] font-black text-gray-900 mt-1">$9<span className="text-[11px] text-gray-400 font-bold">/mo</span></p>
-              <p className="text-[10px] text-gray-500 font-medium mt-2">1 Stripe account, unlimited reminders, default cadence.</p>
-            </div>
-            <div className="border border-gray-200 rounded-xl p-4 opacity-70">
-              <p className="text-[12px] font-bold text-gray-900">Pro</p>
-              <p className="text-[20px] font-black text-gray-900 mt-1">$15<span className="text-[11px] text-gray-400 font-bold">/mo</span></p>
-              <p className="text-[10px] text-gray-500 font-medium mt-2">Multiple Stripe &amp; PayPal accounts, custom cadence sequences.</p>
-            </div>
+            {(["solo", "pro"] as const).map((plan) => {
+              const current = settings.planSlug === plan;
+              const price = plan === "solo" ? "$9" : "$15";
+              const blurb =
+                plan === "solo"
+                  ? "1 Stripe account, unlimited reminders, default cadence."
+                  : "PayPal, custom cadence per client, and team members.";
+              return (
+                <div
+                  key={plan}
+                  className={`rounded-xl p-4 relative ${current ? "border-2 border-[#074E5B]" : "border border-gray-200"}`}
+                >
+                  {current && (
+                    <span className="absolute top-3 right-3 text-[9px] font-bold text-[#074E5B] bg-[#074E5B]/5 border border-[#074E5B]/20 px-2 py-0.5 rounded-full">
+                      Current
+                    </span>
+                  )}
+                  <p className="text-[12px] font-bold text-gray-900 capitalize">{plan}</p>
+                  <p className="text-[20px] font-black text-gray-900 mt-1">
+                    {price}
+                    <span className="text-[11px] text-gray-400 font-bold">/mo</span>
+                  </p>
+                  <p className="text-[10px] text-gray-500 font-medium mt-2">{blurb}</p>
+                  {!current && (
+                    <button
+                      onClick={async () => {
+                        setIsBilling(true);
+                        try {
+                          const res = await fetchAPI("/api/v1/billing/checkout", {
+                            method: "POST",
+                            body: JSON.stringify({ plan }),
+                          });
+                          if (res.url) window.location.href = res.url;
+                        } catch (e) {
+                          console.error("Checkout failed", e);
+                        } finally {
+                          setIsBilling(false);
+                        }
+                      }}
+                      disabled={isBilling}
+                      className="mt-3 w-full rounded-full bg-[#22C55E] py-1.5 text-[10px] font-bold text-white hover:bg-[#16A34A] disabled:opacity-50"
+                    >
+                      {plan === "solo" ? "Switch to Solo" : "Upgrade to Pro"}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

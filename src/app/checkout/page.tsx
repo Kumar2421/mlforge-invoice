@@ -7,13 +7,25 @@ import { MLForgeMark } from "@/components/icons";
 export default function CheckoutPage() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async () => {
     setIsLoading(true);
-    // Real implementation will redirect to Stripe Checkout
-    setTimeout(() => {
-      alert("Stripe integration pending: Waiting for API keys");
-      setIsLoading(false);
-    }, 1000);
+    try {
+      const res = await fetch("/api/v1/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ plan: "pro" }),
+      });
+      const body = await res.json();
+      if (res.ok && body.url) {
+        window.location.href = body.url;
+        return;
+      }
+      alert(body.error || "Could not start checkout.");
+    } catch {
+      alert("Could not start checkout.");
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -24,7 +36,7 @@ export default function CheckoutPage() {
           Activate Your Account
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Start your <span className="font-bold text-[#074E5B]">3-day free trial</span> today. Cancel anytime.
+          Subscribe to keep your automated reminders running. Cancel anytime from the billing portal.
         </p>
       </div>
 
@@ -75,23 +87,19 @@ export default function CheckoutPage() {
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 h-[200px] flex items-center justify-center text-sm text-gray-500 text-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.02)_50%,transparent_75%,transparent_100%)] bg-[length:20px_20px]" />
                 <div className="relative z-10 flex flex-col items-center gap-2">
-                  <span className="bg-gray-200 text-gray-600 font-mono text-xs px-2 py-1 rounded">Stripe Payment Element</span>
-                  <p>Secure payment form will render here.</p>
+                  <span className="bg-gray-200 text-gray-600 font-mono text-xs px-2 py-1 rounded">Stripe Checkout</span>
+                  <p>You&apos;ll enter payment details on Stripe&apos;s secure page.</p>
                 </div>
               </div>
 
               <div className="border-t border-gray-100 pt-4 mt-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-2">
-                  <span>Subtotal</span>
-                  <span>$15.00</span>
-                </div>
-                <div className="flex justify-between text-sm text-[#074E5B] font-medium mb-4">
-                  <span>Trial Discount (3 Days)</span>
-                  <span>-$15.00</span>
+                  <span>Pro plan</span>
+                  <span>$15.00 / month</span>
                 </div>
                 <div className="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-4">
-                  <span>Total Due Today</span>
-                  <span>$0.00</span>
+                  <span>Billed monthly</span>
+                  <span>$15.00</span>
                 </div>
               </div>
 
@@ -104,14 +112,14 @@ export default function CheckoutPage() {
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
-                    Start 3-Day Free Trial
+                    Continue to payment
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
-              
+
               <p className="text-xs text-center text-gray-400 mt-4">
-                You will not be charged until the 3-day trial period ends. Cancel anytime before to avoid charges.
+                Cancel anytime from the billing portal in Settings.
               </p>
             </div>
           </div>

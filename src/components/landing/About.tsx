@@ -1,7 +1,6 @@
 'use client'
 
-import Image from 'next/image'
-import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal'
+import { Reveal } from '@/components/ui/Reveal'
 
 export function About() {
   return (
@@ -60,13 +59,20 @@ export function About() {
             >
               <Reveal delay={100} style={{}} className="h-full md-span-2">
                 <div
-                  className="relative overflow-hidden rounded-none bg-blue-500 p-5 h-full min-h-[220px]"
+                  className="relative overflow-hidden rounded-none p-5 h-full min-h-[220px]"
+                  style={{
+                    background:
+                      'radial-gradient(120% 120% at 0% 0%, #2563EB 0%, #1D4ED8 55%, #1E293B 100%)',
+                  }}
                 >
-                  <Image
-                    src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/693671b05ed33655d4b7ce17_card-about-img.avif"
-                    alt="Person"
-                    fill
-                    className="object-cover"
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 opacity-[0.12]"
+                    style={{
+                      backgroundImage:
+                        'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
+                      backgroundSize: '40px 40px',
+                    }}
                   />
                   <div className="relative z-10 flex h-full flex-col justify-between gap-16 md:gap-0">
                     <div>
@@ -104,39 +110,11 @@ export function About() {
                       &ldquo;The moment an invoice passes its due date, an escalating
                       reminder sequence starts on its own.&rdquo;
                     </p>
-                    <div className="flex gap-2">
-                      <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white">
-                        <Image
-                          src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6998d6e4c804dbf540688e23_users-1.avif"
-                          alt="User 1"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="relative -ml-3 h-10 w-10 overflow-hidden rounded-full border-2 border-white">
-                        <Image
-                          src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6998d6e4fe402c7f09028c97_users-2.avif"
-                          alt="User 2"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="relative -ml-3 h-10 w-10 overflow-hidden rounded-full border-2 border-white">
-                        <Image
-                          src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6998d6e4bfe84c916ea64131_users-3.avif"
-                          alt="User 3"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="relative -ml-3 h-10 w-10 overflow-hidden rounded-full border-2 border-white">
-                        <Image
-                          src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6998d6e43cf07256024b75c1_users-4.avif"
-                          alt="User 4"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground/70">
+                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#131313] text-xs font-bold text-white">D3</span>
+                      <span className="-ml-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#131313] text-xs font-bold text-white">D7</span>
+                      <span className="-ml-3 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#22C55E] bg-white text-xs font-bold text-[#22C55E]">D14</span>
+                      <span className="ml-2">then it stops</span>
                     </div>
                   </div>
                 </div>

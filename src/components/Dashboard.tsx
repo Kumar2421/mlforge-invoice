@@ -12,8 +12,6 @@ import {
   Bell,
   Plus,
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Share2,
   Filter,
   MoreVertical,
@@ -36,7 +34,6 @@ import ReportsView from "./ReportsView";
 import RemindersView from "./RemindersView";
 import SettingsView from "./SettingsView";
 import TeamView from "./TeamView";
-import OnboardingView from "./OnboardingView";
 import AdminDashboard from "./AdminDashboard";
 import { MLForgeMark } from "./icons";
 import { SupportWidget } from "./SupportWidget";
@@ -45,11 +42,13 @@ import type { Invoice, Payment } from "@/types";
 
 type DashboardProps = {
   displayName: string;
-  needsOnboarding: boolean;
+  needsOnboarding?: boolean;
+  isFreeTier?: boolean;
 };
 
-export default function Dashboard({ displayName, needsOnboarding }: DashboardProps) {
+export default function Dashboard({ displayName, isFreeTier }: DashboardProps) {
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,18 +63,30 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
     }
   }, [theme]);
 
+  const [report, setReport] = useState<{
+    collectionRate: number;
+    avgDaysToPay: number;
+    totalInvoiced: number;
+    totalPaid: number;
+    collectionByMonth: Array<{ month: string; value: number; height: number }>;
+  } | null>(null);
+
   useEffect(() => {
     Promise.all([
       fetchAPI('/api/v1/invoices'),
-      fetchAPI('/api/v1/payments')
+      fetchAPI('/api/v1/payments'),
+      fetchAPI('/api/v1/reports').catch(() => ({ data: null })),
     ])
-      .then(([invRes, payRes]) => {
+      .then(([invRes, payRes, repRes]) => {
         setInvoices(invRes.data || []);
         setPayments(payRes.data || []);
+        setReport(repRes.data || null);
       })
       .catch(err => console.error("Failed to fetch dashboard data", err))
       .finally(() => setIsLoading(false));
   }, []);
+
+  const trendMonths = report?.collectionByMonth ?? [];
 
   const totalInvoiced = invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
   const totalPaid = payments.filter(p => p.status === 'Succeeded').reduce((sum, p) => sum + (p.amount || 0), 0);
@@ -160,9 +171,15 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                 { name: "Overdue", count: overdueCount, color: "bg-[#D1D5DB]" },
                 { name: "Cancelled", count: cancelledCount, color: "bg-[#EF4444]" },
                 { name: "Drafts", count: invoices.filter(i => !i.status || i.status === 'Draft').length, color: "bg-[#374151]" },
-              ].map((s) => (
+              ].map((s) => {
+                const key = s.name === "Drafts" ? "Draft" : s.name;
+                const active = statusFilter === key;
+                return (
                 <li key={s.name}>
-                  <button className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-[12px] font-medium text-gray-500 hover:bg-gray-50 transition-all">
+                  <button
+                    onClick={() => { setActiveTab("Dashboard"); setStatusFilter(active ? null : key); }}
+                    className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all ${active ? "bg-[#F3F4F6] text-gray-900" : "text-gray-500 hover:bg-gray-50"}`}
+                  >
                     <span className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${s.color}`} />
                       {s.name}
@@ -170,7 +187,8 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                     <span className="text-[11px] text-gray-400">{s.count}</span>
                   </button>
                 </li>
-              ))}
+                );
+              })}
             </ul>
           </div>
         </nav>
@@ -210,7 +228,20 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                 <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
                 PayPal
               </span>
-              <button className="text-[9px] font-bold text-[#074E5B] hover:underline">Connect</button>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch("/api/v1/paypal/connect", { method: "POST" });
+                    const data = await res.json();
+                    if (data.redirect_url) window.location.href = data.redirect_url;
+                  } catch (err) {
+                    console.error("PayPal connect failed:", err);
+                  }
+                }}
+                className="text-[9px] font-bold text-[#074E5B] hover:underline"
+              >
+                Connect
+              </button>
             </div>
           </div>
         </div>
@@ -279,9 +310,7 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
           </div>
         </div>
 
-        {needsOnboarding && activeTab === "Dashboard" ? (
-          <OnboardingView onOpenSettings={() => setActiveTab("Settings")} />
-        ) : activeTab === "Invoices" ? (
+        {activeTab === "Invoices" ? (
           <InvoicesView onNewSequence={() => setActiveTab("NewSequence")} />
         ) : activeTab === "NewSequence" ? (
           <ReminderSequenceView onBack={() => setActiveTab("Reminders")} />
@@ -299,6 +328,22 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
           <TeamView />
         ) : (
           <main className="flex-1 overflow-y-auto no-scrollbar px-6 pt-5 pb-6 space-y-4">
+            {/* Free tier banner */}
+            {isFreeTier && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start justify-between">
+                <div>
+                  <p className="text-[12px] font-bold text-amber-900">Trial expired — Free tier active</p>
+                  <p className="text-[11px] text-amber-800 mt-1">View up to 5 invoices. Upgrade to Pro to unlock full features.</p>
+                </div>
+                <button
+                  onClick={() => setActiveTab("Settings")}
+                  className="text-[11px] font-bold text-amber-700 hover:text-amber-900 px-3 py-1.5 bg-amber-100 rounded hover:bg-amber-200 transition-colors"
+                >
+                  Upgrade
+                </button>
+              </div>
+            )}
+
             {/* Greeting + Actions */}
             <div className="flex items-center justify-between">
               <div>
@@ -322,7 +367,7 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                 <div className="w-8 h-8 rounded-lg border border-[#E5E7EB] flex items-center justify-center text-gray-400">
                   <ClipboardList className="w-4 h-4" />
                 </div>
-                <button className="text-[9px] font-bold text-gray-600 hover:text-gray-900 flex items-center gap-0.5">
+                <button onClick={() => setActiveTab("Reports")} className="text-[9px] font-bold text-gray-600 hover:text-gray-900 flex items-center gap-0.5">
                   Full Report <span className="text-sm leading-none">↗</span>
                 </button>
               </div>
@@ -338,9 +383,6 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                   ))}
                 </div>
               </div>
-              <p className="text-[9px] text-gray-400 font-medium mt-1.5">
-                <span className="text-green-600 font-bold">+6.4%</span> than last month
-              </p>
             </div>
 
             {/* Card 2: Payments Received */}
@@ -360,9 +402,6 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                   <div className="w-[5px] bg-[#074E5B] rounded-t-sm h-[85%]" />
                 </div>
               </div>
-              <p className="text-[9px] text-gray-400 font-medium mt-1.5">
-                <span className="text-green-600 font-bold">+4.1%</span> than last month
-              </p>
             </div>
 
             {/* Card 3: Outstanding Amount */}
@@ -382,9 +421,6 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                   <div className="w-[5px] bg-[#94A3B8] rounded-t-sm h-[70%]" />
                 </div>
               </div>
-              <p className="text-[9px] text-gray-400 font-medium mt-1.5">
-                <span className="text-red-500 font-bold">-2.8%</span> than last month
-              </p>
             </div>
 
             {/* Card 4: Reminder Status (dark card) */}
@@ -398,10 +434,10 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                   </span>
                 </div>
                 <p className="text-[11px] text-gray-200 font-medium leading-snug mt-2">
-                  <span className="text-white font-bold">{overdueCount} overdue invoices</span> {overdueCount === 1 ? 'has' : 'have'} escalating reminders running. Next email goes out in 2 days.
+                  <span className="text-white font-bold">{overdueCount} overdue invoice{overdueCount === 1 ? '' : 's'}</span> {overdueCount === 1 ? 'has' : 'have'} escalating reminders running.
                 </p>
               </div>
-              <button className="bg-[#A3E635] hover:bg-[#84CC16] text-[#1E1E24] font-bold text-[9px] py-2.5 px-4 flex items-center justify-between w-full transition-colors">
+              <button onClick={() => setActiveTab("Reminders")} className="bg-[#A3E635] hover:bg-[#84CC16] text-[#1E1E24] font-bold text-[9px] py-2.5 px-4 flex items-center justify-between w-full transition-colors">
                 <span>View Reminder Queue</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -414,8 +450,8 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
             <div className="col-span-8 bg-white border border-[#ECECEC] rounded-2xl p-4">
               {/* Header */}
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-[14px] font-bold text-gray-900">Revenue Trend Overview</h3>
-                <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal className="w-5 h-5" /></button>
+                <h3 className="text-[14px] font-bold text-gray-900">Collection Rate Over Time</h3>
+                <button onClick={() => setActiveTab("Reports")} className="text-gray-400 hover:text-gray-600"><MoreHorizontal className="w-5 h-5" /></button>
               </div>
 
               {/* Stats row */}
@@ -425,112 +461,53 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                   <p className="text-[20px] font-black text-gray-900 tracking-tight leading-none mt-0.5">
                     ${totalInvoiced.toLocaleString()}<span className="text-[12px] text-gray-300 font-bold">.00</span>
                   </p>
-                  <p className="text-[9px] text-gray-400 font-medium mt-1">Revenue peaked in <span className="font-bold text-gray-600">September</span></p>
+                  <p className="text-[9px] text-gray-400 font-medium mt-1">{totalInvoicesCount} invoice{totalInvoicesCount === 1 ? "" : "s"} tracked</p>
                 </div>
                 <div>
-                  <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Projected Revenue</span>
+                  <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Collection Rate</span>
                   <p className="text-[20px] font-black text-gray-900 tracking-tight leading-none mt-0.5">
-                    ${(totalPaid + outstanding).toLocaleString()}<span className="text-[12px] text-gray-300 font-bold">.00</span>
+                    {report ? `${report.collectionRate}%` : "—"}
                   </p>
-                  <p className="text-[9px] text-teal-600 font-semibold mt-1">AI forecast +6.9% growth expected</p>
-                </div>
-                <div className="flex items-center gap-2.5 ml-auto">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] text-gray-400 font-semibold">Comparison</span>
-                    <div className="w-8 h-[18px] bg-[#074E5B] rounded-full p-[2px] relative cursor-pointer">
-                      <span className="block w-[14px] h-[14px] rounded-full bg-white absolute right-[2px] top-[2px]" />
-                    </div>
-                  </div>
-                  <button className="flex items-center gap-1 text-[11px] font-semibold text-gray-500 px-2.5 py-1 rounded-lg border border-[#E5E7EB]">
-                    All Periods <ChevronDown className="w-3 h-3" />
-                  </button>
+                  <p className="text-[9px] text-gray-400 font-medium mt-1">
+                    {report ? `${report.avgDaysToPay} avg days to pay` : "No report data yet"}
+                  </p>
                 </div>
               </div>
 
               {/* Chart area */}
               <div className="relative mt-4 h-[220px]">
                 {/* Y-axis labels */}
-                <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[9px] text-gray-400 font-semibold w-7">
-                  <span>$10k</span>
-                  <span>$9k</span>
-                  <span>$8k</span>
-                  <span>$7k</span>
-                  <span>$6k</span>
-                  <span>$0</span>
+                <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between text-[9px] text-gray-400 font-semibold w-8">
+                  <span>100%</span>
+                  <span>75%</span>
+                  <span>50%</span>
+                  <span>25%</span>
+                  <span>0%</span>
                 </div>
 
                 {/* Grid lines */}
-                <div className="absolute left-8 right-0 top-0 bottom-6 flex flex-col justify-between">
-                  {[0, 1, 2, 3, 4, 5].map(i => (
+                <div className="absolute left-9 right-0 top-0 bottom-6 flex flex-col justify-between">
+                  {[0, 1, 2, 3, 4].map(i => (
                     <div key={i} className="w-full border-b border-dashed border-gray-100" />
                   ))}
                 </div>
 
-                {/* Peak dashed line */}
-                <div className="absolute left-8 right-0 top-[8%] border-b-2 border-dashed border-[#22C55E]/30 z-10" />
-
                 {/* Bar columns */}
-                <div className="absolute left-10 right-0 top-0 bottom-0 flex items-end justify-around">
-                  {/* Jul */}
-                  <div className="flex flex-col items-center relative">
-                    {/* Lowest badge */}
-                    <div className="absolute -top-[12px] left-1/2 -translate-x-[calc(50%+30px)] bg-[#F3F4F6] text-gray-700 text-[9px] font-bold px-2 py-0.5 rounded border border-gray-200 z-20 whitespace-nowrap">
-                      $6,810
+                <div className="absolute left-11 right-0 top-0 bottom-0 flex items-end justify-around">
+                  {trendMonths.length === 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center text-[11px] text-gray-400">
+                      Sync invoices to see your collection trend
                     </div>
-                    <span className="absolute -top-[26px] left-1/2 -translate-x-[calc(50%+30px)] text-[8px] text-gray-400 font-semibold z-20">Lowest</span>
-                    <div className="flex items-end gap-[2px] h-[150px]">
-                      <div className="w-3 bg-[#E8E8E8] rounded-t-sm" style={{ height: "55%" }} />
-                      <div className="w-3 bg-[#D1D5DB] rounded-t-sm" style={{ height: "45%" }} />
-                      <div className="w-3 bg-[#CBD5E1] rounded-t-sm" style={{ height: "60%" }} />
+                  )}
+                  {trendMonths.map((m) => (
+                    <div key={m.month} className="flex flex-col items-center relative">
+                      <span className="text-[9px] text-gray-600 font-bold mb-1">{m.value}%</span>
+                      <div className="flex items-end h-[150px]">
+                        <div className="w-8 bg-[#074E5B] rounded-t-sm" style={{ height: `${Math.max(4, m.height)}%` }} />
+                      </div>
+                      <span className="text-[9px] text-gray-400 font-bold mt-2">{m.month}</span>
                     </div>
-                    <div className="flex items-center gap-1 mt-2">
-                      <ChevronLeft className="w-3 h-3 text-gray-400 cursor-pointer" />
-                      <span className="text-[9px] text-gray-400 font-bold">Jul</span>
-                    </div>
-                  </div>
-
-                  {/* Aug */}
-                  <div className="flex flex-col items-center relative">
-                    {/* Average badge */}
-                    <div className="absolute top-[10px] left-1/2 -translate-x-1/2 bg-[#1E1E24] text-white text-[9px] font-bold px-2 py-0.5 rounded z-20 whitespace-nowrap">
-                      $8,060
-                    </div>
-                    <span className="absolute top-[24px] left-1/2 -translate-x-1/2 text-[8px] text-gray-400 font-semibold z-20">Average</span>
-                    <div className="flex items-end gap-[2px] h-[150px]">
-                      <div className="w-3 bg-[#E8E8E8] rounded-t-sm" style={{ height: "60%" }} />
-                      <div className="w-3 bg-[#D1D5DB] rounded-t-sm" style={{ height: "65%" }} />
-                      <div className="w-3 bg-[#94A3B8] rounded-t-sm" style={{ height: "75%" }} />
-                    </div>
-                    <span className="text-[9px] text-gray-400 font-bold mt-2">Aug</span>
-                  </div>
-
-                  {/* Sep (peak) */}
-                  <div className="flex flex-col items-center relative">
-                    {/* Peak badge */}
-                    <div className="absolute -top-[30px] left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
-                      <span className="text-[8px] text-green-600 font-bold uppercase tracking-widest">Peak Month</span>
-                      <span className="bg-[#074E5B] text-white text-[9px] font-bold px-2 py-0.5 rounded mt-0.5">$9,420</span>
-                    </div>
-                    <div className="flex items-end gap-[2px] h-[150px]">
-                      <div className="w-3 bg-[#E8E8E8] rounded-t-sm" style={{ height: "55%" }} />
-                      <div className="w-3 bg-[#074E5B] rounded-t-sm" style={{ height: "92%" }} />
-                      <div className="w-3 bg-[#B0BEC5] rounded-t-sm" style={{ height: "65%" }} />
-                    </div>
-                    <span className="text-[9px] text-gray-400 font-bold mt-2">Sep</span>
-                  </div>
-
-                  {/* Oct */}
-                  <div className="flex flex-col items-center relative">
-                    <div className="flex items-end gap-[2px] h-[150px]">
-                      <div className="w-3 bg-[#E8E8E8] rounded-t-sm" style={{ height: "40%" }} />
-                      <div className="w-3 bg-[#074E5B]/30 rounded-t-sm" style={{ height: "50%" }} />
-                      <div className="w-3 bg-[#CBD5E1] rounded-t-sm" style={{ height: "55%" }} />
-                    </div>
-                    <div className="flex items-center gap-1 mt-2">
-                      <span className="text-[9px] text-gray-400 font-bold">Oct</span>
-                      <ChevronRight className="w-3 h-3 text-gray-400 cursor-pointer" />
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -607,6 +584,17 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
 
           {/* ===== Bottom Table ===== */}
           <div className="bg-white border border-[#ECECEC] rounded-2xl p-4">
+            {statusFilter && (
+              <div className="mb-3 flex items-center gap-2">
+                <span className="text-[10px] font-bold text-gray-500">Filtered:</span>
+                <button
+                  onClick={() => setStatusFilter(null)}
+                  className="text-[10px] font-bold text-[#074E5B] bg-[#074E5B]/5 border border-[#074E5B]/20 rounded-full px-2 py-0.5"
+                >
+                  {statusFilter} ✕
+                </button>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-4">
               <div className="relative">
                 <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -663,8 +651,8 @@ export default function Dashboard({ displayName, needsOnboarding }: DashboardPro
                     <td className="py-3 px-3 font-bold text-gray-900">{row.id ? row.id.substring(0, 15) + '...' : '—'}</td>
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                          <img src={`https://i.pravatar.cc/100?img=${row.clientAvatarImg || 1}`} alt={row.clientName || 'Unknown'} className="w-full h-full object-cover" />
+                        <div className="w-6 h-6 rounded-full bg-[#E8EFF0] text-[#074E5B] text-[9px] font-bold flex items-center justify-center shrink-0 uppercase">
+                          {(row.clientName || '?').trim().charAt(0)}
                         </div>
                         <span className="font-medium text-gray-700">{row.clientName || 'Unknown'}</span>
                       </div>

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx next *)",
+      "Bash(npx shadcn-ui@latest add dialog --yes)",
+      "Bash(npm install *)"
+    ]
+  }
+}

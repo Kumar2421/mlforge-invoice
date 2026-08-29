@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronLeft, ChevronRight, Plus, Pause, Play } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Plus, Pause, Play, Save } from "lucide-react";
 import ReminderTimeline from "./ReminderTimeline";
 import type { ReminderSequence, ReminderStage } from "@/types";
 
@@ -51,6 +51,11 @@ export default function RemindersView({ onNewSequence }: RemindersViewProps) {
   const [rightTab, setRightTab] = useState<"sequence" | "template">("sequence");
   const [paused, setPaused] = useState<Record<string, boolean>>({});
 
+  type TemplateRow = { day: number; tone: "gentle" | "firm" | "final"; subject: string; body: string };
+  const [templates, setTemplates] = useState<TemplateRow[]>([]);
+  const [savingTemplates, setSavingTemplates] = useState(false);
+  const [templateMsg, setTemplateMsg] = useState<string | null>(null);
+
   React.useEffect(() => {
     fetchAPI('/api/v1/reminder-sequences')
       .then(res => {
@@ -64,6 +69,38 @@ export default function RemindersView({ onNewSequence }: RemindersViewProps) {
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
+
+  React.useEffect(() => {
+    fetchAPI('/api/v1/reminder-templates')
+      .then(res => {
+        const rows: TemplateRow[] = (res.data || []).map((t: TemplateRow) => ({
+          day: t.day, tone: t.tone, subject: t.subject, body: t.body,
+        }));
+        setTemplates(rows.length ? rows : defaultTemplateStages.map((s) => ({
+          day: s.day, tone: s.tone as TemplateRow["tone"], subject: s.subject, body: s.body,
+        })));
+      })
+      .catch(() => setTemplates(defaultTemplateStages.map((s) => ({
+        day: s.day, tone: s.tone as TemplateRow["tone"], subject: s.subject, body: s.body,
+      }))));
+  }, []);
+
+  const saveTemplates = async () => {
+    setSavingTemplates(true);
+    setTemplateMsg(null);
+    try {
+      const res = await fetchAPI('/api/v1/reminder-templates', {
+        method: 'PUT',
+        body: JSON.stringify({ stages: templates }),
+      });
+      setTemplates(res.data || templates);
+      setTemplateMsg("Saved. New sequences use these; the daily cron uses them for every reminder.");
+    } catch (e) {
+      setTemplateMsg(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSavingTemplates(false);
+    }
+  };
 
   const selected = sequences.find((s) => s.id === selectedId) ?? sequences[0];
 
@@ -274,7 +311,12 @@ export default function RemindersView({ onNewSequence }: RemindersViewProps) {
             </>
           ) : (
             <div className="space-y-4">
-              {defaultTemplateStages.map((stage) => (
+              <p className="text-[10px] text-gray-400 leading-relaxed">
+                Use <code className="text-gray-600">{"{{client}}"}</code>, <code className="text-gray-600">{"{{invoice}}"}</code>,{" "}
+                <code className="text-gray-600">{"{{amount}}"}</code>, <code className="text-gray-600">{"{{sender}}"}</code> as placeholders.
+                These templates are sent by the daily reminder engine.
+              </p>
+              {templates.map((stage, idx) => (
                 <div key={stage.day} className="border border-gray-200 rounded-xl p-3.5">
                   <div className="flex items-center justify-between mb-2.5">
                     <p className="text-[12px] font-bold text-gray-900">Stage &middot; Day {stage.day}</p>
@@ -285,20 +327,29 @@ export default function RemindersView({ onNewSequence }: RemindersViewProps) {
                   <label className="block text-[10px] font-semibold text-gray-500 mb-1">Subject</label>
                   <input
                     type="text"
-                    defaultValue={stage.subject}
+                    value={stage.subject}
+                    onChange={(e) => setTemplates((t) => t.map((row, i) => (i === idx ? { ...row, subject: e.target.value } : row)))}
                     className="w-full border border-gray-200 rounded-lg py-2 px-3 text-[11px] text-gray-900 font-medium mb-2.5 focus:outline-none focus:border-[#074E5B]"
                   />
                   <label className="block text-[10px] font-semibold text-gray-500 mb-1">Body</label>
                   <textarea
-                    defaultValue={stage.body}
-                    rows={3}
+                    value={stage.body}
+                    onChange={(e) => setTemplates((t) => t.map((row, i) => (i === idx ? { ...row, body: e.target.value } : row)))}
+                    rows={5}
                     className="w-full border border-gray-200 rounded-lg py-2 px-3 text-[10px] text-gray-600 leading-relaxed focus:outline-none focus:border-[#074E5B] resize-none"
                   />
                 </div>
               ))}
-              <button className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-gray-300 rounded-lg text-[10px] font-bold text-gray-600 hover:bg-gray-50 transition-colors">
-                <Plus className="w-3.5 h-3.5" />
-                Add Stage
+              {templateMsg && (
+                <p className="text-[10px] font-semibold text-[#0F5A68]">{templateMsg}</p>
+              )}
+              <button
+                onClick={saveTemplates}
+                disabled={savingTemplates}
+                className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-lg bg-[#074E5B] text-[11px] font-bold text-white hover:bg-[#053E48] transition-colors disabled:opacity-50"
+              >
+                {savingTemplates ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                Save templates
               </button>
             </div>
           )}

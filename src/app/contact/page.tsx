@@ -118,12 +118,13 @@ export default function ContactPage() {
           </div>
 
           {/* Right panel: sky background + form card */}
-          <div className="relative flex min-h-[640px] items-center justify-center overflow-hidden px-6 py-16">
-            <img
-              src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6929d3408e9ff6a515b9eee8_ai-hero--1-.avif"
-              alt="Sky background"
-              className="absolute inset-0 h-full w-full object-cover"
-            />
+          <div
+            className="relative flex min-h-[640px] items-center justify-center overflow-hidden px-6 py-16"
+            style={{
+              background:
+                "radial-gradient(120% 100% at 50% 0%, #1c1c22 0%, #131313 55%, #0c0c0f 100%)",
+            }}
+          >
 
             <div className="relative z-10 w-full max-w-[480px] rounded-[20px] bg-white p-8 shadow-2xl">
               {submitted ? (

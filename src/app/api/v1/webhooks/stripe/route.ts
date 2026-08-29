@@ -36,10 +36,9 @@ async function completeReminderSequence(
   const { data: sequences } = await supabaseAdmin
     .from("reminder_sequences")
     .select("id")
-    .eq("user_id", userId)
     .eq("organization_id", organizationId)
     .eq("invoice_id", invoiceId)
-    .eq("status", "active");
+    .in("status", ["active", "paused"]);
 
   if (!sequences || sequences.length === 0) {
     return;
@@ -172,6 +171,38 @@ export async function POST(request: NextRequest) {
   }
 
   const supabaseAdmin = createAdminClient();
+
+  // Idempotency: Stripe retries events. Record the id first; a duplicate insert
+  // means we already processed this event.
+  const { error: dedupeError } = await supabaseAdmin
+    .from("stripe_webhook_events")
+    .insert({ id: event.id, type: event.type });
+  if (dedupeError) {
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
+  // A voided / uncollectible invoice must stop its reminder sequence.
+  if (event.type === "invoice.voided" || event.type === "invoice.marked_uncollectible") {
+    const invoice = event.data.object as StripeInvoiceLike;
+    if (invoice.id) {
+      const owner = await resolveOwner(supabaseAdmin, invoice.id);
+      if (owner) {
+        await supabaseAdmin
+          .from("invoices")
+          .update({ status: event.type === "invoice.voided" ? "Cancelled" : "Unpaid" })
+          .eq("id", invoice.id);
+        await completeReminderSequence(
+          supabaseAdmin,
+          owner.user_id,
+          owner.organization_id,
+          invoice.id,
+          owner.client_id ?? null,
+          event.type,
+        );
+      }
+    }
+    return NextResponse.json({ received: true });
+  }
 
   if (event.type === "invoice.paid" || event.type === "invoice.payment_succeeded") {
     const invoice = event.data.object as StripeInvoiceLike;

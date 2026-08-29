@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal';
+import { Reveal } from '@/components/ui/Reveal';
 
 const faqs = [
   {

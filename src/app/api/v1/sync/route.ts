@@ -42,6 +42,30 @@ export async function POST() {
     await supabase.from("clients").upsert(clientsData);
   }
 
+  // Rollup client stats: total_invoiced, outstanding_balance from invoices
+  const { data: clientsForRollup } = await supabase
+    .from("clients")
+    .select("id")
+    .eq("organization_id", workspace.organizationId);
+
+  for (const client of clientsForRollup || []) {
+    const { data: clientInvoices } = await supabase
+      .from("invoices")
+      .select("amount, status")
+      .eq("client_id", client.id)
+      .eq("organization_id", workspace.organizationId);
+
+    const totalInvoiced = (clientInvoices || []).reduce((sum, inv) => sum + (inv.amount || 0), 0);
+    const outstanding = (clientInvoices || [])
+      .filter(inv => inv.status !== "Paid" && inv.status !== "Cancelled")
+      .reduce((sum, inv) => sum + (inv.amount || 0), 0);
+
+    await supabase
+      .from("clients")
+      .update({ total_invoiced: totalInvoiced, outstanding_balance: outstanding })
+      .eq("id", client.id);
+  }
+
   // 2. Invoices
   const stripeInvoices = await stripe.invoices.list({ limit: 100 });
   const invoicesData = stripeInvoices.data.map((inv) => {
@@ -62,6 +86,7 @@ export async function POST() {
       client_id: typeof inv.customer === "string" ? inv.customer : inv.customer && "id" in inv.customer ? inv.customer.id : null,
       amount: inv.total / 100,
       status,
+      synced_from_stripe: true,
     };
   });
 

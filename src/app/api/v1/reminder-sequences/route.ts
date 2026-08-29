@@ -96,9 +96,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: seqErr.message }, { status: 500 });
   }
 
-  const stagesToInsert = stages.map((stage: { day: number }) => {
+  // Seed each stage's copy from the workspace's default templates so the cron
+  // sends what the user configured, not a generic body.
+  const { data: templates } = await supabase
+    .from("reminder_templates")
+    .select("day, tone, subject, body")
+    .eq("organization_id", workspace.organizationId);
+  const templateByDay = new Map((templates ?? []).map((t) => [t.day, t]));
+
+  const stagesToInsert = stages.map((stage: { day: number; subject?: string; body?: string; tone?: string }) => {
     const scheduledFor = new Date();
     scheduledFor.setDate(scheduledFor.getDate() + stage.day);
+    const tpl = templateByDay.get(stage.day);
 
     return {
       sequence_id: seq.id,
@@ -106,6 +115,9 @@ export async function POST(request: NextRequest) {
       day: stage.day,
       status: "pending",
       scheduled_for: scheduledFor.toISOString(),
+      subject: stage.subject ?? tpl?.subject ?? null,
+      body: stage.body ?? tpl?.body ?? null,
+      tone: stage.tone ?? tpl?.tone ?? (stage.day <= 3 ? "gentle" : stage.day <= 7 ? "firm" : "final"),
     };
   });
 

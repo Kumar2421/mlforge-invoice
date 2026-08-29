@@ -11,8 +11,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("payments")
-    .select("*, invoices(client_id), clients!inner(name)")
-    .eq("organization_id", workspace.organizationId)
+    .select("*, invoices(client_id, clients(name))")
     .order("date", { ascending: false })
     .limit(50);
 
@@ -22,7 +21,7 @@ export async function GET() {
     id: row.id,
     date: row.date,
     invoiceId: row.invoice_id,
-    clientName: row.clients?.name,
+    clientName: row.invoices?.clients?.name,
     amount: row.amount,
     method: row.method,
     status: row.status,

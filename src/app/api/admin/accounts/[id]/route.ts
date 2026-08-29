@@ -19,7 +19,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     activityResult
   ] = await Promise.all([
     supabase.auth.admin.getUserById(userId),
-    supabase.from("account_settings").select("plan_slug").eq("user_id", userId).single(),
+    supabase.from("organizations").select("plan").eq("created_by", userId).order("created_at", { ascending: true }).limit(1).maybeSingle(),
     supabase.from("stripe_connections").select("stripe_account_id, last_synced_at, connected_at").eq("user_id", userId).single(),
     supabase.from("invoices").select("id, status, amount, created_at").eq("user_id", userId),
     supabase.from("reminder_activity_log").select("event_type, description, created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20)
@@ -39,7 +39,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
       id: user.id,
       name: String(rawName),
       email: user.email ?? "No email",
-      plan: settingsResult.data?.plan_slug === "pro" ? "Pro" : "Solo",
+      plan: settingsResult.data?.plan === "pro" ? "Pro" : "Solo",
       status: user.banned_until ? "Suspended" : "Active",
       is_suspended: !!user.banned_until,
       members: 1, // Organization/members is Phase 4

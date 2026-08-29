@@ -2,8 +2,10 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
 import { LogoMarquee } from "@/components/landing/LogoMarquee";
 import { About } from "@/components/landing/About";
+import { ReminderPreview } from "@/components/landing/ReminderPreview";
 import { Features } from "@/components/landing/Features";
 import { Services } from "@/components/landing/Services";
+import { WhoItsFor } from "@/components/landing/WhoItsFor";
 import { Expertise } from "@/components/landing/Expertise";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { Pricing } from "@/components/landing/Pricing";
@@ -12,15 +14,17 @@ import { FAQ } from "@/components/landing/FAQ";
 import { Blog } from "@/components/landing/Blog";
 import { CtaBanner } from "@/components/landing/CtaBanner";
 import { Footer } from "@/components/landing/Footer";
+import { SITE_URL } from "@/lib/site";
 
 export const metadata = {
   title: "mlforge Invoice — Automated Payment Reminders for Overdue Invoices",
   description:
-    "Get paid faster with automated, escalating payment reminders. Connects read-only to your Stripe and PayPal accounts. Flat $9/mo fee — no percentage cut of your collected revenue. 3-day free trial.",
+    "Get paid faster with automated, escalating payment reminders. Connects read-only to your Stripe. Flat $9/mo fee — no percentage cut of your collected revenue. 3-day free trial.",
+  alternates: { canonical: SITE_URL },
   openGraph: {
     title: "mlforge Invoice — Automated Payment Reminders",
     description:
-      "Escalating reminder emails for overdue invoices, connected read-only to your own Stripe and PayPal. Flat monthly fee, no percentage cut. Start your 3-day free trial.",
+      "Escalating reminder emails for overdue invoices, connected read-only to your own Stripe. Flat monthly fee, no percentage cut.",
   },
 };
 
@@ -31,8 +35,10 @@ export default function Home() {
       <Hero />
       <LogoMarquee />
       <About />
+      <ReminderPreview />
       <Features />
       <Services />
+      <WhoItsFor />
       <Expertise />
       <SocialProof />
       <Pricing />
@@ -42,53 +48,7 @@ export default function Home() {
       <CtaBanner />
       <Footer />
 
-      {/* JSON-LD Structured Data for AI agent discoverability */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SoftwareApplication",
-            name: "mlforge Invoice",
-            applicationCategory: "BusinessApplication",
-            operatingSystem: "Web",
-            description:
-              "Automated, escalating payment reminder emails for overdue invoices. Connects read-only to your Stripe account. Flat monthly fee with no percentage cut.",
-            offers: [
-              {
-                "@type": "Offer",
-                name: "Solo",
-                price: "9.00",
-                priceCurrency: "USD",
-                priceSpecification: {
-                  "@type": "UnitPriceSpecification",
-                  billingDuration: "P1M",
-                },
-              },
-              {
-                "@type": "Offer",
-                name: "Pro",
-                price: "15.00",
-                priceCurrency: "USD",
-                priceSpecification: {
-                  "@type": "UnitPriceSpecification",
-                  billingDuration: "P1M",
-                },
-              },
-            ],
-            featureList: [
-              "Read-only Stripe integration",
-              "Automated escalating reminders (Day 3, 7, 14)",
-              "Auto-stops on payment",
-              "Custom sender identity",
-              "Collection analytics dashboard",
-              "Team workspaces (Pro)",
-              "Custom cadence per client (Pro)",
-            ],
-            url: "https://invoice.mlforge.com",
-          }),
-        }}
-      />
+      {/* SoftwareApplication + Organization + WebSite JSON-LD lives in app/layout.tsx (site-wide). */}
 
       {/* FAQPage schema for AI snippet eligibility */}
       <script
@@ -116,10 +76,10 @@ export default function Home() {
               },
               {
                 "@type": "Question",
-                name: "How does the 3-day free trial work?",
+                name: "How does the free trial work?",
                 acceptedAnswer: {
                   "@type": "Answer",
-                  text: "When you sign up, your workspace gets a 3-day trial with full access to all features. No credit card required upfront. After 3 days, your dashboard is locked until you subscribe.",
+                  text: "When you sign up, your workspace gets a 3-day trial with full access to all features. No credit card required upfront. After 3 days, your dashboard is locked until you subscribe to the Solo ($9/mo) or Pro ($15/mo) plan.",
                 },
               },
             ],

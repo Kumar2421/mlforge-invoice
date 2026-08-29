@@ -218,13 +218,14 @@ export default function AuthSectionOne() {
         </div>
 
         {/* Right: brand panel, matches the landing page hero */}
-        <div className="relative hidden items-center justify-center overflow-hidden rounded-md lg:flex">
+        <div className="relative hidden items-center justify-center overflow-hidden rounded-md bg-[#131313] lg:flex">
           <img
-            src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6929d3408e9ff6a515b9eee8_ai-hero--1-.avif"
-            alt="Payment Reminders"
+            src="/landing/hero-bg.avif"
+            alt=""
+            aria-hidden
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/25" />
 
           <div className="relative z-10 flex h-full w-full flex-col justify-between p-8 sm:p-10">
             <div />

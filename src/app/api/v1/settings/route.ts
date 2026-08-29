@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getCurrentWorkspace } from "@/lib/workspace";
 
 type SettingsRow = {
   sender_name: string | null;
   sender_email: string | null;
   reply_to_email: string | null;
   reminder_cadence_days: number[] | null;
-  plan_slug: "solo" | "pro" | null;
 };
 
 function normalizeCadence(value: unknown) {
@@ -28,25 +28,29 @@ function normalizeCadence(value: unknown) {
 
 export async function GET() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
-    .from("account_settings")
-    .select("sender_name, sender_email, reply_to_email, reminder_cadence_days, plan_slug")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [settingsRes, orgRes] = await Promise.all([
+    supabase
+      .from("account_settings")
+      .select("sender_name, sender_email, reply_to_email, reminder_cadence_days")
+      .eq("organization_id", workspace.organizationId)
+      .maybeSingle(),
+    supabase
+      .from("organizations")
+      .select("plan")
+      .eq("id", workspace.organizationId)
+      .maybeSingle(),
+  ]);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (settingsRes.error) {
+    return NextResponse.json({ error: settingsRes.error.message }, { status: 500 });
   }
 
-  const row = (data ?? {}) as SettingsRow;
+  const row = (settingsRes.data ?? {}) as SettingsRow;
 
   return NextResponse.json({
     data: {
@@ -54,18 +58,15 @@ export async function GET() {
       senderEmail: row.sender_email ?? "",
       replyToEmail: row.reply_to_email ?? "",
       reminderCadenceDays: normalizeCadence(row.reminder_cadence_days ?? undefined),
-      planSlug: row.plan_slug ?? "solo",
+      planSlug: (orgRes.data?.plan as "solo" | "pro") ?? "solo",
     },
   });
 }
 
 export async function PATCH(request: NextRequest) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -74,21 +75,29 @@ export async function PATCH(request: NextRequest) {
   const senderEmail = typeof body.senderEmail === "string" ? body.senderEmail.trim() : "";
   const replyToEmail = typeof body.replyToEmail === "string" ? body.replyToEmail.trim() : "";
   const reminderCadenceDays = normalizeCadence(body.reminderCadenceDays);
-  const planSlug = body.planSlug === "pro" ? "pro" : "solo";
 
-  const { error } = await supabase.from("account_settings").upsert({
-    user_id: user.id,
-    sender_name: senderName,
-    sender_email: senderEmail,
-    reply_to_email: replyToEmail,
-    reminder_cadence_days: reminderCadenceDays,
-    plan_slug: planSlug,
-    updated_at: new Date().toISOString(),
-  });
+  const { error } = await supabase.from("account_settings").upsert(
+    {
+      user_id: workspace.userId,
+      organization_id: workspace.organizationId,
+      sender_name: senderName,
+      sender_email: senderEmail,
+      reply_to_email: replyToEmail,
+      reminder_cadence_days: reminderCadenceDays,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "organization_id" },
+  );
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("plan")
+    .eq("id", workspace.organizationId)
+    .maybeSingle();
 
   return NextResponse.json({
     data: {
@@ -96,7 +105,7 @@ export async function PATCH(request: NextRequest) {
       senderEmail,
       replyToEmail,
       reminderCadenceDays,
-      planSlug,
+      planSlug: (org?.plan as "solo" | "pro") ?? "solo",
     },
   });
 }

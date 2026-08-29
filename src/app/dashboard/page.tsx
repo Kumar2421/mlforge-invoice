@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import Dashboard from "@/components/Dashboard";
 import { createClient } from "@/utils/supabase/server";
+import { getCurrentWorkspace } from "@/lib/workspace";
+import { TRIAL_DAYS } from "@/lib/billing";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -18,30 +20,45 @@ export default async function DashboardPage() {
     user.email?.split("@")[0] ||
     "there";
 
-  const { data: stripeConnection } = await supabase
-    .from("stripe_connections")
-    .select("id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const { data: orgData } = await supabase
-    .from("organizations")
-    .select("trial_starts_at, subscription_status")
-    .eq("created_by", user.id)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (orgData) {
-    const trialStarts = new Date(orgData.trial_starts_at || new Date().toISOString());
-    const now = new Date();
-    const diffMs = now.getTime() - trialStarts.getTime();
-    const diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-    if (diffDays > 3 && orgData.subscription_status !== 'active') {
-      redirect("/activate");
-    }
+  const workspace = await getCurrentWorkspace();
+  if (!workspace) {
+    // No membership yet (trigger race on a fresh signup) — send to onboarding.
+    redirect("/onboarding");
   }
 
-  return <Dashboard displayName={displayName} needsOnboarding={!stripeConnection} />;
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("onboarded_at, trial_starts_at, subscription_status")
+    .eq("id", workspace.organizationId)
+    .maybeSingle();
+
+  const status = org?.subscription_status ?? "trialing";
+
+  // A paying subscription: always allowed.
+  if (status === "active") {
+    if (!org?.onboarded_at) redirect("/onboarding");
+    return <Dashboard displayName={displayName} needsOnboarding={false} />;
+  }
+
+  // Past due or canceled: payment period ended → paywall.
+  if (status === "past_due" || status === "canceled") {
+    redirect("/activate");
+  }
+
+  // Trialing: allowed until the trial window closes.
+  const trialStarts = new Date(org?.trial_starts_at || new Date().toISOString());
+  const daysElapsed = (Date.now() - trialStarts.getTime()) / (1000 * 60 * 60 * 24);
+  const isTrialExpired = daysElapsed > TRIAL_DAYS;
+
+  if (!org?.onboarded_at) {
+    redirect("/onboarding");
+  }
+
+  return (
+    <Dashboard
+      displayName={displayName}
+      needsOnboarding={false}
+      isFreeTier={isTrialExpired}
+    />
+  );
 }

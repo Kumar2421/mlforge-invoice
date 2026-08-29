@@ -1,5 +1,5 @@
 import { Check, X, ArrowUpRight, Shield, Zap, Clock, DollarSign, Mail, BarChart3 } from 'lucide-react';
-import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal';
+import { Reveal } from '@/components/ui/Reveal';
 
 export function Features() {
   const features = [

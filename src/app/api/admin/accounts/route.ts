@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getPlatformAdmin } from "@/lib/platform-admin";
 import { createAdminClient } from "@/lib/supabase-admin";
 
-type SettingsRow = { user_id: string; plan_slug: "solo" | "pro" };
+type OrgRow = { created_by: string; plan: "solo" | "pro" | null };
 type ConnectionRow = { user_id: string; last_synced_at: string | null };
 
 export async function GET() {
@@ -10,16 +10,16 @@ export async function GET() {
   if (!operator) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const supabase = createAdminClient();
-  const [usersResult, settingsResult, connectionsResult, invoicesResult] = await Promise.all([
+  const [usersResult, orgsResult, connectionsResult, invoicesResult] = await Promise.all([
     supabase.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-    supabase.from("account_settings").select("user_id, plan_slug"),
+    supabase.from("organizations").select("created_by, plan"),
     supabase.from("stripe_connections").select("user_id, last_synced_at"),
     supabase.from("invoices").select("user_id, status"),
   ]);
-  const error = usersResult.error || settingsResult.error || connectionsResult.error || invoicesResult.error;
+  const error = usersResult.error || orgsResult.error || connectionsResult.error || invoicesResult.error;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const settingsByUser = new Map((settingsResult.data as SettingsRow[] ?? []).map((item) => [item.user_id, item]));
+  const settingsByUser = new Map((orgsResult.data as OrgRow[] ?? []).map((item) => [item.created_by, { plan_slug: item.plan }]));
   const connectionByUser = new Map((connectionsResult.data as ConnectionRow[] ?? []).map((item) => [item.user_id, item]));
   const invoiceByUser = new Map<string, number>();
   for (const invoice of invoicesResult.data ?? []) {

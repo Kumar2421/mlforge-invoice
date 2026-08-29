@@ -1,7 +1,7 @@
 "use client"
 
 import { CheckCircle2, TrendingUp } from "lucide-react"
-import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal'
+import { Reveal } from '@/components/ui/Reveal'
 
 export function Hero() {
   const cards = [
@@ -91,11 +91,30 @@ export function Hero() {
       `}} />
 
       <img
-        src="/sites/aeline-webflow-io-7f5c9972/root-8a5edab2/images/6929d3408e9ff6a515b9eee8_ai-hero--1-.avif"
-        alt="Hero background"
+        src="/landing/hero-bg.avif"
+        alt=""
+        aria-hidden
         className="absolute inset-0 h-full w-full object-cover"
+        style={{ zIndex: 0 }}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 h-full w-full"
         style={{
           zIndex: 0,
+          background:
+            "linear-gradient(180deg, rgba(12,12,15,0.35) 0%, rgba(12,12,15,0.55) 100%)",
+        }}
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 h-full w-full opacity-[0.06]"
+        style={{
+          zIndex: 0,
+          backgroundImage:
+            "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)",
+          backgroundSize: "64px 64px",
+          maskImage: "radial-gradient(80% 60% at 50% 0%, #000 0%, transparent 80%)",
         }}
       />
 

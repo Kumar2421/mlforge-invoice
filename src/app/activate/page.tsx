@@ -11,17 +11,18 @@ export default function ActivatePage() {
 
   const handleActivate = async () => {
     setIsProcessing(true);
-    // Mock successful payment flow
     try {
-      await fetchAPI("/api/v1/settings/plan", {
+      const res = await fetchAPI("/api/v1/billing/checkout", {
         method: "POST",
         body: JSON.stringify({ plan: selectedPlan }),
       });
-      // Redirect to dashboard after successful payment
-      window.location.href = "/dashboard";
+      if (res.url) {
+        window.location.href = res.url;
+      } else {
+        throw new Error("No checkout URL returned");
+      }
     } catch (error) {
-      console.error("Payment failed", error);
-    } finally {
+      console.error("Checkout failed", error);
       setIsProcessing(false);
     }
   };
@@ -88,7 +89,7 @@ export default function ActivatePage() {
         <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Complete Activation</h3>
           <p className="text-sm text-gray-500 mb-8 font-medium">
-            (This is a mock checkout flow. In production, this will redirect to Stripe Checkout.)
+            You&apos;ll be taken to Stripe&apos;s secure checkout to enter payment details.
           </p>
 
           <div className="space-y-4 mb-8">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
+import { SITE, SITE_URL } from "@/lib/site";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -13,26 +14,74 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    template: "%s | mlforge Invoice",
-    default: "Payment Reminders - Get Paid, Automatically | mlforge Invoice",
+    template: `%s | ${SITE.name}`,
+    default: `${SITE.shortName} — ${SITE.tagline} | ${SITE.name}`,
   },
-  description:
-    "Get paid faster. Automated, escalating payment reminders for anyone who invoices and waits, connected read-only to your own Stripe. Flat monthly fee, no percentage cut.",
+  description: SITE.description,
+  applicationName: SITE.name,
+  keywords: [
+    "payment reminders",
+    "automated invoice follow-up",
+    "overdue invoice reminders",
+    "accounts receivable automation",
+    "Stripe invoice reminders",
+    "get paid faster",
+    "late payment automation",
+    "invoice chasing software",
+  ],
+  alternates: { canonical: SITE_URL },
   openGraph: {
-    title: "mlforge Invoice - Automated Payment Reminders",
-    description: "Get paid faster with automated, escalating payment reminders. Connects to your Stripe.",
-    url: "https://invoice.mlforge.com", // Placeholder URL
-    siteName: "mlforge Invoice",
+    title: `${SITE.name} — Automated Payment Reminders`,
+    description: SITE.description,
+    url: SITE_URL,
+    siteName: SITE.name,
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "mlforge Invoice - Automated Payment Reminders",
-    description: "Get paid faster with automated, escalating payment reminders. Connects to your Stripe.",
+    title: `${SITE.name} — Automated Payment Reminders`,
+    description: "Get paid faster with automated, escalating payment reminders. Connects read-only to your Stripe.",
   },
-  metadataBase: new URL("https://invoice.mlforge.com"), // Placeholder URL
+  robots: { index: true, follow: true },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: SITE.name,
+      url: SITE_URL,
+      email: SITE.contactEmail,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: SITE.name,
+      publisher: { "@id": `${SITE_URL}/#organization` },
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${SITE_URL}/#software`,
+      name: SITE.name,
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      description: SITE.description,
+      url: SITE_URL,
+      offers: SITE.pricing.map((p) => ({
+        "@type": "Offer",
+        name: `${p.name} plan`,
+        price: p.price,
+        priceCurrency: "USD",
+        description: p.summary,
+      })),
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -45,7 +94,13 @@ export default function RootLayout({
       lang="en"
       className={`${plusJakartaSans.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

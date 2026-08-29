@@ -1,6 +1,6 @@
 'use client';
 
-import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal';
+import { Reveal } from '@/components/ui/Reveal';
 import { Sparkles, TrendingUp, Users, Lock } from 'lucide-react';
 
 export function Expertise() {
@@ -91,10 +91,6 @@ function ExpertiseCard({ icon, title, description, children }: ExpertiseCardProp
 
         <h3 className="text-2xl font-medium text-[#131313]">{title}</h3>
         <p className="max-w-sm text-sm leading-relaxed text-[#585858]">{description}</p>
-
-        <button className="mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-[#ececec] px-5 py-2.5 text-xs font-semibold tracking-wide text-[#131313] transition-colors hover:bg-[#e0e0e0]">
-          LEARN MORE
-        </button>
       </div>
 
       <div className="relative mt-8 flex h-40 items-end justify-end">

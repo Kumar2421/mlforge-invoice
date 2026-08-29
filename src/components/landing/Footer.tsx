@@ -1,4 +1,4 @@
-import { Reveal } from '@/components/sites/aeline-webflow-io-7f5c9972/shared/Reveal';
+import { Reveal } from '@/components/ui/Reveal';
 
 export function Footer() {
   return (
@@ -82,8 +82,17 @@ export function Footer() {
                   <a href="/contact" className="text-base text-[#b8d4a8]">
                     Contact
                   </a>
-                  <a href="#" className="text-base text-[#b8d4a8]">
+                  <a href="/blog" className="text-base text-[#b8d4a8]">
                     Blog
+                  </a>
+                  <a href="/compare/vs-chaser" className="text-base text-[#b8d4a8]">
+                    vs Chaser
+                  </a>
+                  <a href="/compare/vs-invoicesherpa" className="text-base text-[#b8d4a8]">
+                    vs InvoiceSherpa
+                  </a>
+                  <a href="/compare/no-percentage-cut" className="text-base text-[#b8d4a8]">
+                    No percentage cut
                   </a>
                 </div>
               </div>
