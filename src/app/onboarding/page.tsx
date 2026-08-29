@@ -101,17 +101,19 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA] flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-lg bg-white rounded-3xl shadow-sm border border-[#E6ECEA] overflow-hidden">
-        <div className="p-8 border-b border-[#F0F0F0] flex items-center justify-between bg-gray-50/50">
+    <div className="min-h-screen bg-gradient-to-br from-[#F7F8FA] to-[#EAEFF0] flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-md border border-[#E5ECEB]/60 overflow-hidden">
+        <div className="px-8 py-6 border-b border-[#F0F0F0] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <MLForgeMark className="w-8 h-8 text-[#074E5B]" />
-            <h1 className="text-xl font-black text-gray-900 tracking-tight">Set up Payment Reminders</h1>
+            <MLForgeMark className="w-7 h-7 text-[#074E5B]" />
+            <h1 className="text-lg font-bold text-gray-900 tracking-tight">Set up Payment Reminders</h1>
           </div>
-          <div className="text-[11px] font-bold text-gray-400">Step {step} of {TOTAL_STEPS}</div>
+          <div className="text-[10px] font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+            Step {step}/{TOTAL_STEPS}
+          </div>
         </div>
 
-        <div className="p-10 min-h-[320px]">
+        <div className="p-8 min-h-[360px]">
           {error && (
             <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[12px] font-semibold text-red-700">
               {error}
@@ -254,32 +256,33 @@ export default function OnboardingPage() {
           )}
         </div>
 
-        <div className="p-6 border-t border-[#F0F0F0] bg-gray-50/50 flex justify-between items-center">
+        <div className="px-8 py-6 border-t border-[#F0F0F0] flex justify-between items-center">
           <div className="flex gap-2">
             {step > 1 ? (
               <button
                 onClick={() => setStep((n) => n - 1)}
-                className="px-4 py-2 text-[12px] font-bold text-gray-500 hover:text-gray-900"
+                disabled={saving}
+                className="px-4 py-2 text-[11px] font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50"
               >
-                Back
+                ← Back
               </button>
             ) : null}
             <button
               onClick={skip}
               disabled={saving}
-              className="px-4 py-2 text-[12px] font-bold text-gray-400 hover:text-gray-600 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 text-[11px] font-semibold text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50"
             >
-              Skip Onboarding
+              Skip
             </button>
           </div>
           <button
             onClick={next}
             disabled={saving || (step === 1 && !s.workspaceName.trim())}
-            className="flex items-center gap-2 px-6 py-3 bg-[#22C55E] hover:bg-[#16A34A] disabled:opacity-50 text-white rounded-xl text-[12px] font-bold transition-all"
+            className="flex items-center gap-2 px-6 py-2.5 bg-[#22C55E] hover:bg-[#16A34A] disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg text-[11px] font-bold transition-all"
           >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {step === TOTAL_STEPS ? "Finish" : "Continue"}
-            {step !== TOTAL_STEPS && !saving && <ArrowRight className="w-4 h-4" />}
+            {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+            {step === TOTAL_STEPS ? "Complete" : "Next"}
+            {step !== TOTAL_STEPS && !saving && <ArrowRight className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>

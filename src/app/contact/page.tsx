@@ -117,14 +117,17 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Right panel: sky background + form card */}
+          {/* Right panel: hero bg image + form card */}
           <div
             className="relative flex min-h-[640px] items-center justify-center overflow-hidden px-6 py-16"
             style={{
-              background:
-                "radial-gradient(120% 100% at 50% 0%, #1c1c22 0%, #131313 55%, #0c0c0f 100%)",
+              backgroundImage: "url(/landing/hero-bg.avif)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}
           >
+            {/* Overlay gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-black/30 via-black/40 to-black/50" />
 
             <div className="relative z-10 w-full max-w-[480px] rounded-[20px] bg-white p-8 shadow-2xl">
               {submitted ? (
@@ -191,6 +194,66 @@ export default function ContactPage() {
                   </button>
                 </form>
               )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About-style grid section */}
+      <section className="bg-white py-20 px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+            {/* Left: Text */}
+            <div>
+              <h2 className="text-4xl font-medium leading-tight text-[#131313] mb-4">
+                Built by founders, for founders
+              </h2>
+              <p className="text-base text-[#585858] leading-relaxed">
+                We've chased invoices ourselves. That's why we built Payment Reminders — simple, flat-fee, and never touches your money.
+              </p>
+            </div>
+
+            {/* Middle + Right: Grid (like About) */}
+            <div className="md:col-span-2 grid grid-cols-2 gap-4">
+              {/* Image + gradient bento */}
+              <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-[#d6fd70]/20 to-[#22C55E]/20 p-8 flex flex-col items-center justify-center min-h-[320px]">
+                <div className="w-full h-full rounded-xl bg-gradient-to-br from-slate-200 via-slate-100 to-slate-50 relative overflow-hidden">
+                  {/* Grid pattern background */}
+                  <div className="absolute inset-0 opacity-40">
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-300" />
+                    <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <defs>
+                        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
+                        </pattern>
+                      </defs>
+                      <rect width="100" height="100" fill="url(#grid)" />
+                    </svg>
+                  </div>
+                  {/* Initials circle (like Dashboard) */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-24 h-24 rounded-full bg-[#22C55E]/10 border-2 border-[#22C55E]/30 flex items-center justify-center text-4xl font-black text-[#22C55E]">
+                      SK
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right column: two stacked tiles */}
+              <div className="flex flex-col gap-4">
+                <div className="rounded-2xl bg-[#f2f2f2] p-6 flex flex-col justify-between min-h-[156px]">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#131313] mb-2">Founder-focused</h3>
+                    <p className="text-xs text-[#585858]">Built by people who actually chase invoices.</p>
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-[#EAF3F0] p-6 flex flex-col justify-between min-h-[156px]">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#0F5A68] mb-2">Always transparent</h3>
+                    <p className="text-xs text-[#0F5A68]/80">No hidden fees, no % cuts. Just flat-rate simplicity.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
