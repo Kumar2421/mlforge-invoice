@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { getCurrentWorkspace, isWorkspaceManager } from "@/lib/workspace";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 /** GET → current onboarding state for the active workspace. */
 export async function GET() {
@@ -39,8 +40,9 @@ export async function PATCH(request: NextRequest) {
 
   const body = await request.json().catch(() => ({}));
 
+  const supabaseAdmin = createAdminClient();
   if (typeof body.workspaceName === "string" && body.workspaceName.trim()) {
-    await supabase
+    await supabaseAdmin
       .from("organizations")
       .update({ name: body.workspaceName.trim() })
       .eq("id", workspace.organizationId);
@@ -68,7 +70,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (body.complete === true) {
-    await supabase
+    await supabaseAdmin
       .from("organizations")
       .update({ onboarded_at: new Date().toISOString() })
       .eq("id", workspace.organizationId)

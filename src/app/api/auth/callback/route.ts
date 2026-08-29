@@ -7,20 +7,9 @@ import { createClient } from "@/utils/supabase/server";
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   const nextParam = request.nextUrl.searchParams.get("next");
-
-  // Behind a reverse proxy (Vercel/Netlify) `request.nextUrl.origin` can resolve
-  // to the internal host (localhost), so a redirect built from it lands the user
-  // on localhost. Prefer the configured public site URL, then the forwarded host,
-  // then finally the request origin.
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
-  const configuredBase =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.URL || // Netlify sets this to the site's primary URL
-    (forwardedHost ? `${forwardedProto}://${forwardedHost}` : request.nextUrl.origin);
-
-  const base = configuredBase.replace(/\/$/, "");
-
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host;
+  const proto = request.headers.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
+  const base = `${proto}://${host}`;
   let destination = "/onboarding";
 
   if (code) {

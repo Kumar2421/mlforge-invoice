@@ -12,8 +12,12 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const workspace = await getCurrentWorkspace();
 
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.nextUrl.host;
+  const proto = req.headers.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https");
+  const base = `${proto}://${host}`;
+
   if (!workspace?.organizationId) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/login`);
+    return NextResponse.redirect(`${base}/login`);
   }
 
   const code = req.nextUrl.searchParams.get("code");
@@ -21,7 +25,7 @@ export async function GET(req: NextRequest) {
 
   if (!code) {
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?paypal_error=no_code`
+      `${base}/dashboard?paypal_error=no_code`
     );
   }
 
@@ -29,7 +33,7 @@ export async function GET(req: NextRequest) {
   const token = await exchangePayPalCode(code);
   if (!token) {
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?paypal_error=token_exchange_failed`
+      `${base}/dashboard?paypal_error=token_exchange_failed`
     );
   }
 
@@ -56,11 +60,11 @@ export async function GET(req: NextRequest) {
   if (error) {
     console.error("PayPal connection store error:", error);
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?paypal_error=store_failed`
+      `${base}/dashboard?paypal_error=store_failed`
     );
   }
 
   return NextResponse.redirect(
-    `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?paypal_connected=true`
+    `${base}/dashboard?paypal_connected=true`
   );
 }

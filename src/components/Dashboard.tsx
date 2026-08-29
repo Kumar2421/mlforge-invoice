@@ -25,6 +25,7 @@ import {
   PiggyBank,
   ClipboardList,
   Loader2,
+  ShieldCheck,
 } from "lucide-react";
 import InvoicesView from "./InvoicesView";
 import ReminderSequenceView from "./ReminderSequenceView";
@@ -44,9 +45,10 @@ type DashboardProps = {
   displayName: string;
   needsOnboarding?: boolean;
   isFreeTier?: boolean;
+  isAdmin?: boolean;
 };
 
-export default function Dashboard({ displayName, isFreeTier }: DashboardProps) {
+export default function Dashboard({ displayName, isFreeTier, isAdmin }: DashboardProps) {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -159,6 +161,17 @@ export default function Dashboard({ displayName, isFreeTier }: DashboardProps) {
                 </li>
               );
             })}
+            {isAdmin && (
+              <li className="mt-4 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => window.location.href = "/admin"}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[12px] font-bold text-rose-600 bg-[#FFF1F2] hover:bg-[#FFE4E6] hover:text-rose-700 transition-all border border-rose-100"
+                >
+                  <ShieldCheck className="w-[18px] h-[18px]" />
+                  <span>Admin Panel</span>
+                </button>
+              </li>
+            )}
           </ul>
 
           {/* Invoices category section */}

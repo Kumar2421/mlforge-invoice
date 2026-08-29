@@ -26,6 +26,14 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
+  const { data: adminRole } = await supabase
+    .from("platform_admins")
+    .select("role")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const isAdmin = Boolean(adminRole);
+
   const { data: org } = await supabase
     .from("organizations")
     .select("onboarded_at, trial_starts_at, subscription_status")
@@ -37,7 +45,7 @@ export default async function DashboardPage() {
   // A paying subscription: always allowed.
   if (status === "active") {
     if (!org?.onboarded_at) redirect("/onboarding");
-    return <Dashboard displayName={displayName} needsOnboarding={false} />;
+    return <Dashboard displayName={displayName} needsOnboarding={false} isAdmin={isAdmin} />;
   }
 
   // Past due or canceled: payment period ended → paywall.
@@ -59,6 +67,7 @@ export default async function DashboardPage() {
       displayName={displayName}
       needsOnboarding={false}
       isFreeTier={isTrialExpired}
+      isAdmin={isAdmin}
     />
   );
 }

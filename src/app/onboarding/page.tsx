@@ -62,6 +62,15 @@ export default function OnboardingPage() {
     }
   };
 
+  const skip = async () => {
+    try {
+      await save({ complete: true });
+      router.replace("/dashboard");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Skip failed");
+    }
+  };
+
   const next = async () => {
     try {
       if (step === 1) await save({ workspaceName: s.workspaceName });
@@ -93,7 +102,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-sm border border-[#E6ECEA] overflow-hidden">
+      <div className="w-full max-w-lg bg-white rounded-3xl shadow-sm border border-[#E6ECEA] overflow-hidden">
         <div className="p-8 border-b border-[#F0F0F0] flex items-center justify-between bg-gray-50/50">
           <div className="flex items-center gap-3">
             <MLForgeMark className="w-8 h-8 text-[#074E5B]" />
@@ -246,16 +255,23 @@ export default function OnboardingPage() {
         </div>
 
         <div className="p-6 border-t border-[#F0F0F0] bg-gray-50/50 flex justify-between items-center">
-          {step > 1 ? (
+          <div className="flex gap-2">
+            {step > 1 ? (
+              <button
+                onClick={() => setStep((n) => n - 1)}
+                className="px-4 py-2 text-[12px] font-bold text-gray-500 hover:text-gray-900"
+              >
+                Back
+              </button>
+            ) : null}
             <button
-              onClick={() => setStep((n) => n - 1)}
-              className="px-4 py-2 text-[12px] font-bold text-gray-500 hover:text-gray-900"
+              onClick={skip}
+              disabled={saving}
+              className="px-4 py-2 text-[12px] font-bold text-gray-400 hover:text-gray-600 disabled:opacity-50 transition-colors"
             >
-              Back
+              Skip Onboarding
             </button>
-          ) : (
-            <div />
-          )}
+          </div>
           <button
             onClick={next}
             disabled={saving || (step === 1 && !s.workspaceName.trim())}
