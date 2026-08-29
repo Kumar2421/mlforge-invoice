@@ -53,7 +53,8 @@ export default function OnboardingPage() {
     setSaving(true);
     setError(null);
     try {
-      await fetchAPI("/api/v1/onboarding", { method: "PATCH", body: JSON.stringify(patch) });
+      const res = await fetchAPI("/api/v1/onboarding", { method: "PATCH", body: JSON.stringify(patch) });
+      return res;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Save failed");
       throw e;
@@ -64,8 +65,12 @@ export default function OnboardingPage() {
 
   const skip = async () => {
     try {
-      await save({ complete: true });
-      router.replace("/dashboard");
+      const res = await save({ complete: true });
+      if (res?.data?.ok) {
+        router.replace("/dashboard");
+      } else {
+        setError("Failed to complete onboarding");
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Skip failed");
     }
@@ -82,8 +87,12 @@ export default function OnboardingPage() {
         });
       }
       if (step === 4) {
-        await save({ reminderCadenceDays: s.reminderCadenceDays, complete: true });
-        router.replace("/dashboard");
+        const res = await save({ reminderCadenceDays: s.reminderCadenceDays, complete: true });
+        if (res?.data?.ok) {
+          router.replace("/dashboard");
+        } else {
+          setError("Failed to complete onboarding");
+        }
         return;
       }
       setStep((n) => Math.min(n + 1, TOTAL_STEPS));

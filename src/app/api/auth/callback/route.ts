@@ -8,9 +8,13 @@ import { getPlatformAdmin } from "@/lib/platform-admin";
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
   const nextParam = request.nextUrl.searchParams.get("next");
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || request.nextUrl.host;
-  const proto = request.headers.get("x-forwarded-proto") || process.env.NEXT_PUBLIC_SITE_URL?.split("://")[0] || (host.includes("localhost") ? "http" : "https");
-  const base = `${proto}://${host}`;
+
+  // Build base URL: prefer NEXT_PUBLIC_SITE_URL, fall back to headers
+  let base = process.env.NEXT_PUBLIC_SITE_URL || "https://localhost:3000";
+  if (!base.includes("://")) {
+    base = `https://${base}`;
+  }
+
   let destination = "/onboarding";
 
   if (code) {
@@ -21,28 +25,28 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${base}/login?error=auth`);
     }
 
+    // Get current user after session exchange
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.redirect(`${base}/login?error=no_user`);
+    }
+
     // Check if platform admin → route to /admin
     const admin = await getPlatformAdmin();
     if (admin) {
       destination = "/admin";
     } else {
       // Returning users skip onboarding.
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: org } = await supabase
+        .from("organizations")
+        .select("onboarded_at")
+        .eq("created_by", user.id)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
 
-      if (user) {
-        const { data: org } = await supabase
-          .from("organizations")
-          .select("onboarded_at")
-          .eq("created_by", user.id)
-          .order("created_at", { ascending: true })
-          .limit(1)
-          .maybeSingle();
-
-        if (org?.onboarded_at) {
-          destination = "/dashboard";
-        }
+      if (org?.onboarded_at) {
+        destination = "/dashboard";
       }
     }
   }
